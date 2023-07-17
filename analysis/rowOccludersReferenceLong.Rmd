@@ -1,0 +1,696 @@
+---
+title: "Exp. 3a"
+author: "Matan Mazor"
+date: "2023-06-08"
+output: word_document
+---
+
+```{r setup, include = FALSE}
+
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'reticulate',
+    'tidyverse',
+    'broom',
+    'cowplot',
+    'MESS', # for AUCs
+    'lsr', # for effect sizes
+    'pwr', # for power calculations
+    'brms', # for mixed effects modeling
+    'BayesFactor',# for Bayesian t test
+    'jsonlite', #parsing data from sort_trial
+    'afex', #for anova
+    'purrr'
+  ), "2022-12-01"
+)
+r_refs("r-references.bib")
+knitr::opts_chunk$set(echo=F,message=F, warning=F)
+library(signcon)
+
+```
+
+```{r load_and_format_data, echo=FALSE, cache=TRUE}
+# Recursive function to read 'data.txt' files from directory and its subdirectories
+read_concat_data <- function(dir) {
+  
+  # List files in directory
+  files <- list.files(dir, recursive = TRUE)
+  
+  # Filter to keep only 'data.txt' files
+  data_files <- files[grepl("data.txt$", files)]
+  
+  # Add directory path to file names
+  data_files <- file.path(dir, data_files)
+  
+  # Read all 'data.txt' files, replacing missing columns with NA
+  data_list <- map(data_files, ~ read_csv(.x, col_types = cols(.default = "c")) %>% replace_na(list(NA)))
+  
+  # Bind all data frames together
+  all_data <- bind_rows(data_list)
+  
+  return(all_data)
+}
+
+E3a.raw_df <- read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session1') %>% 
+  mutate(session=1) %>%
+    rbind(read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session2') %>%
+            mutate(session=2))%>%
+    rbind(read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session3') %>%
+            mutate(session=3))%>%
+    rbind(read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session4') %>%
+            mutate(session=4))%>%
+    rbind(read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session5') %>%
+            mutate(session=5))%>%
+  filter(!(PROLIFIC_PID%in%c('PROLIFIC_PID','first_target','S')))%>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct=='true'),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key)
+
+```
+
+
+```{r exclude, echo=FALSE, cache=TRUE,include=FALSE}
+
+E3a.low_accuracy <- E3a.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    accuracy = mean(correct)) %>%
+    filter(accuracy<0.5) %>%
+  pull(subj_id)
+
+E3a.too_slow <- E3a.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    third_quartile_RT = quantile(RT,0.75)) %>%
+    filter(third_quartile_RT>7000) %>%
+  pull(subj_id)
+
+E3a.too_fast <- E3a.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    first_quartile_RT = quantile(RT,0.25)) %>%
+    filter(first_quartile_RT<100) %>%
+  pull(subj_id)
+
+E3a.to_exclude <- c(
+  E3a.low_accuracy,
+  E3a.too_slow,
+  E3a.too_fast
+) %>% unique()
+
+E3a.df <- E3a.raw_df %>%
+  filter(!(subj_id %in% E3a.to_exclude));
+  
+```
+
+```{r descriptives, echo=FALSE, cache=TRUE}
+
+E3a.overall_descriptives <- E3a.df %>%
+    filter(test_part=='test1' | test_part=='test2') %>%
+    group_by(subj_id) %>%
+    summarise(accuracy=mean(correct),
+            resp_bias=mean(resp),
+            slow_RT = quantile(RT,0.75)>7000,
+            RT=median(RT),
+            hit_rate = (sum(correct & present)+0.5)/(sum(present)+1),
+            fa_rate = (sum(!correct & !present)+0.5)/(sum(!present)+1),
+            d = qnorm(hit_rate)-qnorm(fa_rate),
+            c = -0.5*(qnorm(hit_rate)+qnorm(fa_rate)),
+            comprehension_visits = mean(as.numeric(comprehension_visits),na.rm=T),
+            ntrials=n());
+```
+
+`r E3a.raw_df%>%pull(subj_id)%>%unique()%>%length()` participants completed the task. Mean accuracy in the main block experiment was `r E3a.overall_descriptives%>%pull(accuracy)%>%mean()%>%printnum()` (SD=`r E3a.overall_descriptives%>%pull(accuracy)%>%sd()%>%printnum()`). The mean median response time was `r printnum(E3a.overall_descriptives%>%pull(RT)%>%mean()/1000)` seconds (SD=`r printnum(E3a.overall_descriptives%>%pull(RT)%>%sd()/1000)`). `r E3a.low_accuracy%>%length()` participants were excluded based on our pre-registered accuracy lower bound of 50%, `r E3a.too_fast%>%length()` were excluded based on our pre-registered criterion for making hasty responses (RT\<100 ms in more than 25% of the trials), and `r E3a.too_slow%>%length()` participants were excluding for having response times longer than 7 seconds in more than 25% of the trials, leaving `r E3a.df$subj_id%>%unique()%>%length()` for the main analysis. 
+
+
+```{r H1, echo=FALSE, cache=TRUE}
+
+E3a.RT_by_resp <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100) %>%
+  group_by(subj_id,resp) %>%
+  summarise(RT=median(RT))%>%
+  spread(resp,RT,sep='')%>%
+  mutate(diff=respTRUE-respFALSE)
+```
+
+*Hypothesis 1 (PRESENCE/ABSENCE RESPONSE TIME)*: As expected, response times were significantly shorter in decisions about presence compared to absence (`r printnum(E3a.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E3a.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E3a.RT_by_resp%>%pull(diff)%>%t.test())$statistic`).
+
+
+```{r H2, echo=FALSE, cache=TRUE}
+
+E3a.RT_by_occlusion_in_presence <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000  &resp) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35);
+
+E3a.RT_by_occlusion_in_presence_correct_only <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000  &resp & correct) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35);
+```
+
+*Hypothesis 2 (OCCLUSION RT EFFECT IN PRESENCE)*: Target-present decisions were significantly slower when more of the target was occluded behind black rows (`r printnum(E3a.RT_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean()/1000)` vs `r printnum(E3a.RT_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean()/1000)` seconds;  `r apa_print(E3a.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`).
+
+```{r H3, echo=FALSE, cache=TRUE}
+
+E3a.RT_by_occlusion_in_absence <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000  &!resp) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35);
+
+E3a.RT_by_occlusion_in_absence_correct_only <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000  &!resp & correct) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35);
+```
+
+*Hypothesis 3 (OCCLUSION RT EFFECT IN ABSENCE)*: Target-absent decision times were unaffected by the occlusion manipulation (`r printnum(E3a.RT_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean()/1000)` vs `r printnum(E3a.RT_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean()/1000)` seconds for the 2 and 6 rows conditions, respectively;  `r apa_print(E3a.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$statistic`).
+
+
+```{r H4, echo=FALSE, cache=TRUE}
+
+E3a.RT_by_occlusion_and_response <- merge(
+  E3a.RT_by_occlusion_in_presence,
+  E3a.RT_by_occlusion_in_absence,
+  by= 'subj_id',
+  suffixes = c('presence','absence')) %>%
+  mutate(interaction = diffpresence-diffabsence);
+
+E3a.RT_by_occlusion_and_response_correct_only <- merge(
+  E3a.RT_by_occlusion_in_presence_correct_only,
+  E3a.RT_by_occlusion_in_absence_correct_only,
+  by= 'subj_id',
+  suffixes = c('presence','absence')) %>%
+  mutate(interaction = diffpresence-diffabsence);
+```
+
+*Hypothesis 4 (OCCLUSION RESPONSE INTERACTION ON RT)*: The effect of occlusion on response time was stronger in decisions about target presence, compared to decisions about target absence (`r apa_print(E3a.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`).
+
+```{r quantiles, echo=FALSE, cache=TRUE, fig.cap="Response time quantiles 50, 75, 90 and 95 for correct decisions about presence and absence when 2 or 6 rows are occluded." }
+
+
+# a function to map the quantiles of target absent search times to
+# target present search times.
+getQuantiles <- function(pres,abs,probs) {
+  present = quantile(pres,probs)
+  absent = quantile(abs,probs)
+  return(data.frame(probs, present,absent))
+}
+
+
+E3a.quantiles <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & correct) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(getQuantiles(
+    RT[resp],
+    RT[!resp],
+    c(0.5,0.75,0.9,0.95)
+  )) %>%
+  pivot_longer(cols=c('present','absent'), names_to='resp', values_to='RT')
+
+E3a.quantile_occlusion_effects <- E3a.quantiles %>%
+  group_by(subj_id, probs,resp) %>%
+  spread(hide_proportion, RT, sep='') %>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35) %>%
+  dplyr::select(subj_id,probs,diff)%>%
+  pivot_wider(names_from=resp,values_from=diff)
+
+E3a.quantile_summary <- E3a.quantiles %>% 
+  group_by(subj_id) %>%
+  mutate(centeredRT = RT-mean(RT))%>%
+  group_by(hide_proportion,probs, resp) %>%
+  summarise(mean_RT=mean(RT),
+            se_RT = se(centeredRT)) %>%
+  mutate(resp=factor(resp, levels=c('present','absent')),
+         hide_proportion=factor(hide_proportion,levels=c(0.1,0.35)))
+
+E3a.quantile_plot <- E3a.quantile_summary %>% 
+  mutate(occluded_rows = factor(ifelse(hide_proportion==0.1,2,6)))%>%
+  ggplot(aes(x=occluded_rows, 
+             y=mean_RT, 
+             color=resp,
+             alpha=factor(probs),
+             group=probs)) +
+  geom_line(size=1.3)+
+  geom_errorbar(aes(ymin=mean_RT-se_RT,ymax=mean_RT+se_RT))+
+  scale_color_manual(values=c("#377eb8", "#e41a1c"))+
+  scale_alpha_manual(values=c(1,0.8,0.6,0.4))+
+  facet_grid(~resp)+
+  labs(x='number of hidden rows',
+       y='RT (ms)')+
+  theme_bw() +
+  theme(legend.pos='na')
+
+ggsave('figures/E4Quantiles_separate.png',E3a.quantile_plot,width=3.5,height=3.5);
+
+E3a.quantile_plot
+
+```
+
+```{r participant-specific-plot-sig, echo=FALSE, cache=TRUE }
+
+N_perm <- 1000;
+bootstrap_error <- function(x, N_perm) {
+  N <- length(x)
+  medians = c();
+  for (i in 1:N_perm) {
+    medians = c(medians,sample(x,replace=TRUE,size=N)%>%median())
+  };
+  return(sd(medians))
+}
+
+E3a.RT <- E3a.df %>%
+   filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & correct) %>%
+  mutate(occluded_rows=factor(ifelse(hide_proportion>0.2,6,2)),
+         subj_id=as.numeric(as.factor(subj_id)))%>%
+  group_by(subj_id,resp, occluded_rows) %>%
+  summarise(
+    median_RT=median(RT),
+    sem_RT=bootstrap_error(RT,N_perm)
+  ) %>%
+  mutate(resp=factor(resp,levels=c(TRUE,FALSE),labels=c('present','absent')))
+
+E3a.RT_sig <- E3a.df %>%
+   filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & correct) %>%
+  mutate(occluded_rows=factor(ifelse(hide_proportion>0.2,6,2)),
+         subj_id=as.numeric(as.factor(subj_id)))%>%
+  group_by(subj_id,resp) %>%
+  summarise(
+    sig = factor(ifelse(wilcox.test(RT[occluded_rows==6],RT[occluded_rows==2])$p.value<0.05,
+                        'sig','nonsig'),
+                 levels=c('sig','nonsig'))
+  ) %>%
+  mutate(resp=factor(resp,levels=c(TRUE,FALSE),labels=c('present','absent')))
+
+
+E3a.RT <- E3a.RT %>%
+  merge(E3a.RT_sig)
+
+sig_subs <- E3a.RT %>%
+  group_by(subj_id) %>%
+  summarise(nsig=sum(sig=='sig')) %>%
+  filter(nsig>0) %>%
+  pull(subj_id)
+
+E3a.rt_plot<- E3a.RT %>% 
+ ggplot(aes(x=occluded_rows, 
+             y=median_RT, 
+             color=resp,
+             group=interaction(subj_id,resp),
+             alpha=sig,
+            label=subj_id)) +
+  geom_line(size=1)+
+  geom_errorbar(aes(ymin=median_RT-sem_RT,ymax=median_RT+sem_RT),width=0.1)+
+  # geom_label(data= E3a.RT %>%
+  #              filter(subj_id %in% sig_subs),
+  #            fill='white',alpha=1)+
+  scale_color_manual(values=c("#377eb8", "#E41a1c"))+
+  scale_alpha_manual(values=c(1,0.35))+
+  facet_grid(~resp)+
+  labs(x='occluded rows',
+       y='RT')+
+  theme_bw() +
+  theme(legend.pos='na')
+
+ggsave('figures/E3aRT.png',E3a.rt_plot,width=3.5,height=3.5);
+
+```
+
+```{r SDT, echo=FALSE, cache=TRUE}
+
+E3a.descriptives_by_occlusion<- E3a.df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  mutate(resp = response==presence_key)%>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(accuracy=mean(correct),
+            resp_bias=mean(resp),
+            RT=median(RT),
+            hit_rate = (sum(correct & present)+0.5)/(sum(present)+1),
+            fa_rate = (sum(!correct & !present)+0.5)/(sum(!present)+1),
+            d = qnorm(hit_rate)-qnorm(fa_rate),
+            c = -0.5*(qnorm(hit_rate)+qnorm(fa_rate)))
+
+E3a.dprime <- E3a.descriptives_by_occlusion%>%
+  dplyr::select(subj_id,hide_proportion,d)%>%
+  spread(hide_proportion, d,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35)
+
+E3a.criterion <- E3a.descriptives_by_occlusion%>%
+  dplyr::select(subj_id,hide_proportion,c)%>%
+  spread(hide_proportion, c,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35)
+
+E3a.hit_rate <- E3a.descriptives_by_occlusion%>%
+  dplyr::select(subj_id,hide_proportion,hit_rate)%>%
+  spread(hide_proportion, hit_rate,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35)
+
+E3a.fa_rate <- E3a.descriptives_by_occlusion%>%
+  dplyr::select(subj_id,hide_proportion,fa_rate)%>%
+  spread(hide_proportion, fa_rate,sep='')%>%
+  mutate(diff=hide_proportion0.1-hide_proportion0.35)
+```
+
+*Hypothesis 5 (SENSITIVITY)*: Signal detection sensitivity was significantly impacted by pixel occlusion (`r apa_print(E3a.dprime$diff%>%t.test())$statistic`), with d'=`r printnum(E3a.dprime$hide_proportion0.1%>%mean())` (SD=`r printnum(E3a.dprime$hide_proportion0.1%>%sd())`) when two rows were occluded, and d'=`r printnum(E3a.dprime$hide_proportion0.35%>%mean())` (SD=`r printnum(E3a.dprime$hide_proportion0.35%>%sd())`) when six rows were occluded. This effect was driven by a decrease in hit rate (`r apa_print(E3a.hit_rate$diff%>%t.test())$statistic`), and a smaller decrease in the false-positive rate (`r apa_print(E3a.fa_rate$diff%>%t.test())$statistic`) when six rows were occluded.
+
+*Hypothesis 6 (CRITERION)*: Signal detection criterion was conservative overall, and more conservative when more of the display was occluded (`r apa_print(E3a.criterion$diff%>%t.test())$statistic`), with c=`r printnum(E3a.criterion$hide_proportion0.1%>%mean())` (SD=`r printnum(E3a.criterion$hide_proportion0.1%>%sd())`) when two rows were occluded, and `r printnum(E3a.criterion$hide_proportion0.35%>%mean())` (SD=`r printnum(E3a.criterion$hide_proportion0.35%>%sd())`) when six rows were occluded. 
+
+```{r sign consistency analysis}
+
+set.seed(1)
+
+E3a.tp.directional <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  filter(present==1 & correct==1) %>%
+  dplyr::select(subj_id,hide_proportion,RT) %>%
+  drop_na()%>%
+  signcon::test_directional_effect(idv='subj_id',dv='RT',iv='hide_proportion', summary_function = median)
+
+E3a.ta.directional <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  filter(present==0 & correct==1) %>%
+  dplyr::select(subj_id,hide_proportion,RT) %>%
+  drop_na()%>%
+  signcon::test_directional_effect(idv='subj_id',dv='RT',iv='hide_proportion', summary_function = median)
+
+E3a.tp.sign_consistency <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  filter(present==1 & correct==1) %>%
+  dplyr::select(subj_id,hide_proportion,RT) %>%
+  drop_na()%>%
+  signcon::test_sign_consistency(idv='subj_id',dv='RT',iv='hide_proportion', summary_function = median)
+
+E3a.ta.sign_consistency <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  filter(present==0 & correct==1) %>%
+  dplyr::select(subj_id,hide_proportion,RT) %>%
+  drop_na()%>%
+  signcon::test_sign_consistency(idv='subj_id',dv='RT',iv='hide_proportion', summary_function = median)
+
+```
+
+```{r correlations}
+
+E3a.correlation_matrix <- cor(
+  E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion=='0.35'],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion=='0.1'],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion=='0.35'],na.rm=T)-
+              median(RT[correct & resp & hide_proportion=='0.1'],na.rm=T),
+            hit_rate = mean(resp[present==1]),
+            fa_rate = mean(resp[present==0]),
+            c = -0.5*(qnorm(0.01+hit_rate*0.99)+qnorm(0.01+fa_rate*0.99)),
+            accuracy = mean(correct)) %>%
+    dplyr::select(-subj_id)
+)
+```
+
+
+```{r participant-specific-plot, echo=FALSE, cache=TRUE }
+
+N_perm <- 1000;
+bootstrap_error <- function(x, N_perm) {
+  N <- length(x)
+  medians = c();
+  for (i in 1:N_perm) {
+    medians = c(medians,sample(x,replace=TRUE,size=N)%>%median())
+  };
+  return(sd(medians))
+}
+
+E3a.RT <- E3a.df %>%
+   filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & correct) %>%
+  mutate(occluded_rows=factor(ifelse(hide_proportion>0.2,6,2)))%>%
+  group_by(subj_id,resp, occluded_rows) %>%
+  summarise(
+    median_RT=median(RT),
+    sem_RT=bootstrap_error(RT,N_perm)
+  ) %>%
+  mutate(resp=factor(resp,levels=c(TRUE,FALSE),labels=c('present','absent'))) 
+
+E3a.RT_sc <- E3a.tp.sign_consistency$consistency_per_id %>%
+  mutate(resp='present') %>%
+  rbind(E3a.ta.sign_consistency$consistency_per_id %>%
+          mutate(resp='absent'))
+
+min_sc = E3a.RT_sc$score%>%min()
+max_sc = E3a.RT_sc$score%>%max()
+E3a.RT <- E3a.RT %>%
+  merge(E3a.RT_sc, by=c('subj_id','resp'))
+
+E3a.rt_present_plot<- E3a.RT %>% 
+  filter(resp=='present') %>%
+  mutate(subj_id=factor(subj_id,
+                        levels=E3a.RT %>%
+                          group_by(subj_id) %>%
+                          summarise(score=mean(score)) %>%
+                          arrange(score) %>%
+                          pull(subj_id))) %>%
+ggplot(aes(x=occluded_rows, 
+             y=median_RT, 
+             color=score,
+             group=interaction(subj_id,resp))) +
+  geom_line(size=1.5)+
+  geom_errorbar(aes(ymin=median_RT-sem_RT,ymax=median_RT+sem_RT),width=0.1)+
+  scale_color_gradient(low = 'gray', 
+                      high = "#377eb8", limits=c(0,1))+
+  scale_size_continuous(range=c(0,3))+
+  scale_y_continuous(limits=c(1000,4600))+
+  facet_grid(~resp)+
+  labs(x='occluded rows',
+       y='RT')+
+  theme_bw() +
+  theme(legend.pos='na', text = element_text(size = 14))
+
+
+ggsave('figures/E3aRT_present.png',E3a.rt_present_plot,width=2.2,height=3.5);
+
+
+E3a.rt_absent_plot<- E3a.RT %>% 
+  filter(resp=='absent') %>%
+  mutate(subj_id=factor(subj_id,
+                        levels=E3a.RT %>%
+                          group_by(subj_id) %>%
+                          summarise(score=mean(score)) %>%
+                          arrange(score) %>%
+                          pull(subj_id))) %>%
+ggplot(aes(x=occluded_rows, 
+             y=median_RT, 
+             color=score,
+             group=interaction(subj_id,resp))) +
+  geom_line(size=1.5)+
+  geom_errorbar(aes(ymin=median_RT-sem_RT,ymax=median_RT+sem_RT),width=0.1)+
+  scale_color_gradient(low = 'gray', 
+                      high = "#E41a1c", limits=c(0,1))+
+  scale_size_continuous(range=c(0,3))+
+  scale_y_continuous(limits=c(1000,4600))+
+  facet_grid(~resp)+
+  labs(x='occluded rows',
+       y='RT')+
+  theme_bw() +
+  theme(legend.pos='na', text = element_text(size = 14))
+
+
+ggsave('figures/E3aRT_absent.png',E3a.rt_absent_plot,width=2.2,height=3.5);
+```
+
+```{r sign consistency analysis of present responses}
+
+E3a.hit.directional <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2')) %>%
+  filter(present==1) %>%
+  dplyr::select(subj_id,hide_proportion,resp) %>%
+  drop_na()%>%
+  signcon::test_directional_effect(idv='subj_id',dv='resp',iv='hide_proportion', summary_function = mean)
+
+E3a.fa.directional <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2')) %>%
+  filter(present==0) %>%
+  dplyr::select(subj_id,hide_proportion,resp) %>%
+  drop_na()%>%
+  signcon::test_directional_effect(idv='subj_id',dv='resp',iv='hide_proportion', summary_function = mean)
+
+E3a.hit.sign_consistency <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2')) %>%
+  filter(present==1) %>%
+  dplyr::select(subj_id,hide_proportion,resp) %>%
+  drop_na()%>%
+  signcon::test_sign_consistency(idv='subj_id',dv='resp',iv='hide_proportion', summary_function = mean)
+
+E3a.fa.sign_consistency <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2')) %>%
+  filter(present==0) %>%
+  dplyr::select(subj_id,hide_proportion,resp) %>%
+  drop_na()%>%
+  signcon::test_sign_consistency(idv='subj_id',dv='resp',iv='hide_proportion', summary_function = mean)
+
+```
+
+
+```{r participant-specific-present-plot, echo=FALSE, cache=TRUE }
+
+N_perm <- 1000;
+bootstrap_error <- function(x, N_perm) {
+  N <- length(x)
+  medians = c();
+  for (i in 1:N_perm) {
+    medians = c(medians,sample(x,replace=TRUE,size=N)%>%median())
+  };
+  return(sd(medians))
+}
+
+E3a.present_summary <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id,hide_proportion,present) %>%
+  summarise(ppresent = mean(resp)) 
+  
+E3a.present_sc <- E3a.hit.sign_consistency$consistency_per_id %>%
+  mutate(present=1) %>%
+  rbind(E3a.fa.sign_consistency$consistency_per_id %>%
+          mutate(present=0))
+
+E3a.present_summary <- E3a.present_summary %>%
+  merge(E3a.present_sc, by=c('subj_id','present')) %>%
+  mutate(present = factor(present, levels=c(1,0), labels=c('present','absent')),
+         occluded_rows = ifelse(hide_proportion==0.1,2,6))
+
+min_sc = E3a.present_sc$score%>%min()
+max_sc = E3a.present_sc$score%>%max()
+
+E3a.present_plot<- E3a.present_summary %>% 
+ ggplot(aes(x=occluded_rows, 
+             y=ppresent, 
+             color=present,
+             group=interaction(subj_id,present),
+             alpha=score)) +
+  geom_line(data=E3a.present_summary,aes(x=as.numeric(occluded_rows)-0.6+0.4*as.numeric(present)),size=1.5)+
+  geom_point(data=E3a.present_summary,aes(x=as.numeric(occluded_rows)-0.6+0.4*as.numeric(present)),size=3)+
+  # geom_label(data= E3a.RT %>%
+  #              filter(subj_id %in% sig_subs),
+  #            fill='white',alpha=1)+
+  scale_color_manual(values=c("#377eb8", "#E41a1c"))+
+  scale_alpha_continuous(range=c(min_sc,max_sc))+
+  labs(x='occluded rows',
+       y='p(report presence)')+
+  theme_bw() +
+  theme(legend.pos='na', text = element_text(size = 14)) +
+  scale_x_continuous(limits=c(0.5,7.5),breaks=c(2,6))
+
+  
+  ggsave(paste('figures/E3a_present_separate.png',sep=''),E3a.present_plot,width=3.5,height=2);
+
+```
+
+```{r plot sign consistency}
+plot_sign_consistency <- function(sc_results,color,file_path) {
+  
+  # calculate density
+  dens <- density(sc_results$null)
+  
+  # rescale the x values of the density to match the width of the rectangle
+  dens$x <- (dens$x - min(dens$x)) / diff(range(dens$x))
+  
+  # rescale the y values of the density to match the height of the rectangle
+  dens$y <- (dens$y / max(dens$y)) * 0.1 + 0.45
+  
+  # create a data frame for the density
+  df_density <- data.frame(x = dens$x, y = dens$y)
+  
+  # Create a data frame for the points
+  df_points <- data.frame(x = sc_results$consistency_per_id$score, 
+                          y = rep(0.472, length(sc_results$consistency_per_id)))
+  
+  # Number of steps in the gradient
+  n <- 500
+  
+  # Create a data frame for the gradient
+  df_rect <- data.frame(x = seq(0, 1, length.out = n), 
+                        alpha = seq(0, 1, length.out = n))%>% 
+    mutate(height=ifelse(abs(x-sc_results$statistic)<0.01,0.1,0.02),
+                        y = ifelse(abs(x-sc_results$statistic)<0.01,0.50,0.46))
+  
+  print(df_points)
+  
+  # Create the plot
+p <- ggplot() +
+  # Draw the rectangle
+  geom_tile(data = df_rect, aes(x = x, y = y, fill = alpha, height=height), width = 1/n) +
+  scale_fill_gradient(low = 'gray', 
+                      high = color) +
+  scale_color_gradient(low = 'gray', 
+                      high = color)+
+  # Draw the density plot
+  geom_line(data = df_density, aes(x = x, y = y), color = "black") +
+  # Draw the points
+  geom_jitter(data = df_points, aes(x = x, y = y,fill=x), size = 4, shape=21,color = "black",width=0,height=0.01) +
+  # geom_point(data = df_points, aes(x = x, y = y), size = 4, shape=21,color = "black") +
+  # geom_vline(xintercept=sc_results$statistic, size=1, color=color, alpha=sc_results$statistic) +
+  geom_text(data=df_density, aes(x=sc_results$statistic+0.05, y=0.51, label = sprintf("%.2f", sc_results$statistic), color=x), alpha=sc_results$statistic, size=6) +
+  coord_fixed(ratio = 3) +
+  theme_void() +
+  theme(axis.text.y = element_text(margin = margin(t = 1000)),
+        axis.ticks.y = element_line(),
+        plot.margin = margin(0, 0, 0, 0)) +
+  scale_x_continuous(breaks = seq(0, 1, by = 0.2), limits = c(0, 1)) +
+  theme(legend.pos='na', text = element_text(size = 14)) +
+  coord_flip()
+
+ggsave(file_path, plot = p, width = 1.2, height = 4, units = "in", dpi = 300)
+
+p
+}
+
+
+plot_sign_consistency(E3a.ta.sign_consistency,"#e41a1c",'figures/E3a_SC_RT_ta.png')
+plot_sign_consistency(E3a.tp.sign_consistency,"#377eb8",'figures/E3a_SC_RT_tp.png')
+
+plot_sign_consistency(E3a.hit.sign_consistency,"#e41a1c",'figures/E3a_SC_hit.png')
+plot_sign_consistency(E3a.fa.sign_consistency,"#e41a1c",'figures/E3a_SC_fa.png')
+
+```
+
+```{r plot distribution, eval=F}
+
+E3a.subjects <- E3a.df$subj_id%>%unique()
+
+E3.random_subset_df <- E3.RT_by_occlusion_and_response_correct_only %>% 
+    mutate(sampled=factor(ifelse(subj_id %in% c(E3a.subjects),1,0),levels=c(0,1))) %>% 
+  gather(key='condition',value='effect',diffpresence,diffabsence) %>%
+  mutate(condition=factor(ifelse(condition=='diffabsence','absent','present'),
+                          levels=c('present','absent')),
+         effect=-effect)
+
+E3.random_subset_df %>%
+  ggplot(aes(x=effect)) +
+  geom_histogram(bins=100, fill='grey') +
+  facet_grid(rows=vars(condition)) +
+  scale_fill_manual(values=c('grey','black')) +
+  scale_x_continuous(breaks=c(0), limits=c(-2400,2400))+
+  scale_y_continuous(breaks=c())+
+  labs(x='RT difference: 2 minus 6 rows (ms)', y='')+
+  theme_bw() +
+  theme(legend.pos='na', text = element_text(size = 14)) +
+  geom_vline(data = E6.random_subset_df %>% filter(sampled==1),
+             aes(xintercept=effect))
+
+ggsave('figures/E3a_subjects_histogram.png', width = 6, height = 2, units = "in", dpi = 300)
+
+```

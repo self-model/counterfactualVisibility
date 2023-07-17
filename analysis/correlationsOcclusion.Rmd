@@ -1,0 +1,207 @@
+---
+title: "Correlations between target-absent RT effect and other things in the occlusion manipulations"
+author: "Matan Mazor"
+date: "2023-06-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library('groundhog')
+groundhog.library(
+  c(
+    'tidyverse',
+    'dplyr'
+  ), "2022-12-01"
+)
+knitr::opts_chunk$set(echo=F,message=F, warning=F)
+```
+
+Basically I find no correlation of the absence RT effect with anything.
+
+```{r load}
+
+
+E1.raw_df <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfiles_batch1/all_data.csv') %>%
+  filter(frame_index==0)%>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key) 
+
+E2.raw_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all_data.csv') %>%
+  filter(frame_index==0)%>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key) 
+
+E3.raw_df <- read_csv('../experiments/Exp3reference/data/jatos_results_data_batch1.txt') %>%
+  # filter(frame_index==0)%>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct=='true'),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key, 
+         hide_proportion=as.numeric(hide_proportion)) 
+
+
+```
+
+```{r filter}
+E1.low_accuracy <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    accuracy = mean(correct)) %>%
+    filter(accuracy<0.5) %>%
+  pull(subj_id)
+
+E1.too_slow <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    third_quartile_RT = quantile(RT,0.75)) %>%
+    filter(third_quartile_RT>5000) %>%
+  pull(subj_id)
+
+E1.too_fast <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    first_quartile_RT = quantile(RT,0.25)) %>%
+    filter(first_quartile_RT<100) %>%
+  pull(subj_id)
+
+E1.to_exclude <- c(
+  E1.low_accuracy,
+  E1.too_slow,
+  E1.too_fast
+) %>% unique()
+
+E1.df <- E1.raw_df %>%
+  filter(!(subj_id %in% E1.to_exclude)) %>%
+  mutate(hide_proportion = ifelse(hide_proportion==0.15,'high',
+                                  ifelse(hide_proportion==0.05, 'low', NA)))  %>%
+  filter(test_part %in% c('test1','test2'))
+
+
+E2.low_accuracy <- E2.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    accuracy = mean(correct)) %>%
+    filter(accuracy<0.5) %>%
+  pull(subj_id)
+
+E2.too_slow <- E2.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    third_quartile_RT = quantile(RT,0.75)) %>%
+    filter(third_quartile_RT>5000) %>%
+  pull(subj_id)
+
+E2.too_fast <- E2.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    first_quartile_RT = quantile(RT,0.25)) %>%
+    filter(first_quartile_RT<100) %>%
+  pull(subj_id)
+
+E2.to_exclude <- c(
+  E2.low_accuracy,
+  E2.too_slow,
+  E2.too_fast
+) %>% unique()
+
+E2.df <- E2.raw_df %>%
+  filter(!(subj_id %in% E2.to_exclude))%>%
+  mutate(hide_proportion = ifelse(abs(hide_proportion-0.35)<0.0001,'high',
+                                  ifelse(abs(hide_proportion-0.10)<0.0001,'low',NA)))  %>%
+  filter(test_part %in% c('test1','test2'))
+
+E3.low_accuracy <- E3.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    accuracy = mean(correct)) %>%
+    filter(accuracy<0.5) %>%
+  pull(subj_id)
+
+E3.too_slow <- E3.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    third_quartile_RT = quantile(RT,0.75)) %>%
+    filter(third_quartile_RT>7000) %>%
+  pull(subj_id)
+
+E3.too_fast <- E3.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    first_quartile_RT = quantile(RT,0.25)) %>%
+    filter(first_quartile_RT<100) %>%
+  pull(subj_id)
+
+E3.to_exclude <- c(
+  E3.low_accuracy,
+  E3.too_slow,
+  E3.too_fast
+) %>% unique()
+
+E3.df <- E3.raw_df %>%
+  filter(!(subj_id %in% E3.to_exclude))%>%
+  mutate(hide_proportion = ifelse(abs(hide_proportion-0.35)<0.0001,'high',
+                                  ifelse(abs(hide_proportion-0.10)<0.0001,'low',NA)))  %>%
+  filter(test_part %in% c('test1','test2'))
+
+
+```
+
+```{r create matrices}
+
+E1.correlation_matrix <- E1.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion=='low'],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & resp & hide_proportion=='low'],na.rm=T),
+            hit_rate = mean(resp[present==1]),
+            fa_rate = mean(resp[present==0]),
+            c = -0.5*(qnorm(0.01+hit_rate*0.99)+qnorm(0.01+fa_rate*0.99)),
+            accuracy = mean(correct))
+
+E2.correlation_matrix <- E2.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion=='low'],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & resp & hide_proportion=='low'],na.rm=T),
+            hit_rate = mean(resp[present==1]),
+            fa_rate = mean(resp[present==0]),
+            c = -0.5*(qnorm(0.01+hit_rate*0.99)+qnorm(0.01+fa_rate*0.99)),
+            accuracy = mean(correct))
+
+E3.correlation_matrix <- E3.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion=='low'],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion=='high'],na.rm=T)-
+              median(RT[correct & resp & hide_proportion=='low'],na.rm=T),
+            hit_rate = mean(resp[present==1]),
+            fa_rate = mean(resp[present==0]),
+            c = -0.5*(qnorm(0.01+hit_rate*0.99)+qnorm(0.01+fa_rate*0.99)),
+            accuracy = mean(correct))
+
+
+```

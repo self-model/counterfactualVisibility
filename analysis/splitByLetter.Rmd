@@ -1,0 +1,163 @@
+---
+title: "Split By Letter"
+author: "Matan Mazor"
+date: "2023-07-06"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'reticulate',
+    'tidyverse',
+    'broom',
+    'cowplot',
+    'MESS', # for AUCs
+    'lsr', # for effect sizes
+    'pwr', # for power calculations
+    'brms', # for mixed effects modeling
+    'BayesFactor',# for Bayesian t test
+    'jsonlite', #parsing data from sort_trial
+    'afex' #for anova
+  ), "2022-12-01"
+)
+r_refs("r-references.bib")
+
+```
+
+
+```{r load-and-process}
+source("../analysis/loadAndPreprocessData.R")
+```
+
+
+```{r split-rt-by-letter, echo=FALSE}
+
+splitRTbyLetter <- function(df, iv, iv_levels) {
+  
+  filtered_df <- df %>%
+    filter(test_part %in% c('test1','test2') &
+             RT<5000 &
+             RT>100 &
+             correct)
+  
+  summary_df <- filtered_df %>% 
+    group_by(subj_id,target,present,.data[[iv]]) %>%
+    summarise(RT=median(RT, na.rm=T)) %>%
+    spread(.data[[iv]],RT,sep='') %>%
+    mutate(diff=.data[[paste(iv,iv_levels[1],sep='')]]-
+             .data[[paste(iv,iv_levels[2],sep='')]],
+           signdiff=sign(diff)) %>%
+    group_by(subj_id,present) %>%
+    mutate(other_sign = rev(signdiff)) %>% 
+    filter(!is.na(other_sign) &
+             !is.na(signdiff))
+  
+  return(summary_df)
+}
+
+```
+
+
+```{r analyze-and-plot-occlusion, echo=FALSE}
+
+occlusion.split.df <- splitRTbyLetter(occlusion.df,'hide_proportion',c('low','high'))
+occlusion.split.summary.df <- occlusion.split.df %>% 
+  merge(occlusion.df %>%
+          group_by(subj_id) %>%
+          summarise(exp=exp[1]))%>%
+  group_by(target,present,other_sign,exp) %>%
+  summarise(mean=mean(diff), se=se(diff))
+
+occlusion.split.summary.df %>%
+  mutate(present=factor(present, levels=c(1,0), 
+                        labels=c('present','absent')),
+         other_sign=factor(other_sign, levels=c(-1,1),
+                           labels=c('negative','positive'))) %>% 
+  ggplot(aes(x=present,y=mean,fill=other_sign)) + 
+  geom_bar(stat='identity',position='dodge') +
+  geom_errorbar(aes(ymin=mean-se,ymax=mean+se)  ,position='dodge') +
+  geom_abline(slope=0) +
+  facet_wrap(~target*exp)
+
+occlusion.split.df %>% 
+  merge(occlusion.df %>%
+          group_by(subj_id) %>%
+          summarise(exp=exp[1]))%>%
+  dplyr::select(subj_id,present,diff,target,exp) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  spread(target,diff) %>%
+  ggplot(aes(x=A,y=S)) +
+  geom_point() +
+  facet_wrap(~present*exp) +
+  geom_smooth(method='lm')
+
+```
+
+```{r analyze-and-plot-occlusion-long, echo=FALSE}
+
+E2a.split.df <- splitRTbyLetter(E2a.df %>%
+                                  mutate(hide_proportion=ifelse(hide_proportion>0.1,'high','low')),'hide_proportion',c('low','high'))
+
+E2a.split.summary.df <- E2a.split.df %>% 
+  group_by(target,present,other_sign) %>%
+  summarise(mean=mean(diff), se=se(diff))
+
+E2a.split.summary.df %>% 
+  mutate(present=factor(present, levels=c(1,0), 
+                        labels=c('present','absent')),
+         other_sign=factor(other_sign, levels=c(-1,1),
+                           labels=c('negative','positive'))) %>% 
+  ggplot(aes(x=present,y=mean,fill=other_sign)) + 
+  geom_bar(stat='identity',position='dodge') +
+  geom_errorbar(aes(ymin=mean-se,ymax=mean+se)  ,position='dodge') +
+  geom_abline(slope=0) +
+  facet_wrap(~target)
+
+E2a.split.df %>% 
+  dplyr::select(subj_id,present,diff,target) %>%
+  spread(target,diff) %>%
+  ggplot(aes(x=A,y=S)) +
+  geom_point() +
+  facet_wrap(~present) +
+  geom_smooth(method='lm')
+
+```
+
+
+```{r analyze-and-plot-reference-long, echo=FALSE}
+
+E3a.split.df <- splitRTbyLetter(E3a.df %>%
+                                  mutate(hide_proportion=ifelse(hide_proportion>0.1,'high','low')),
+                                'hide_proportion',c('low','high'))
+
+E3a.split.summary.df <- E3a.split.df %>% 
+  group_by(target,present,other_sign) %>%
+  summarise(mean=mean(diff), se=se(diff))
+
+E3a.split.summary.df %>% 
+  mutate(present=factor(present, levels=c(1,0), 
+                        labels=c('present','absent')),
+         other_sign=factor(other_sign, levels=c(-1,1),
+                           labels=c('negative','positive'))) %>% 
+  ggplot(aes(x=present,y=mean,fill=other_sign)) + 
+  geom_bar(stat='identity',position='dodge') +
+  geom_errorbar(aes(ymin=mean-se,ymax=mean+se)  ,position='dodge') +
+  geom_abline(slope=0) +
+  facet_wrap(~target)
+
+E3a.split.df %>% 
+  dplyr::select(subj_id,present,diff,target) %>%
+  spread(target,diff) %>%
+  ggplot(aes(x=A,y=S)) +
+  geom_point() +
+  facet_wrap(~present) +
+  geom_smooth(method='lm')
+
+```

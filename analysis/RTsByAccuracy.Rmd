@@ -1,0 +1,159 @@
+---
+title             : "RTs by accuracy"
+shorttitle        : "RTs by accuracy"
+
+author: 
+  - name          : "Matan Mazor"
+    affiliation   : "1,2"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Malet Street, London WC1E 7HX"
+    email         : "mtnmzor@gmail.com"
+  #   role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+  #     - Conceptualization
+  #     - Writing - Original Draft Preparation
+  #     - Writing - Review & Editing
+  
+  - name          : "Clare Press"
+    affiliation   : "1,2"
+    # role:
+    #   - Writing - Review & Editing
+
+affiliation:
+  - id            : "1"
+    institution   : "Birkbeck, University of London"
+  - id            : "2"
+    institution   : "Wellcome Centre for Human Neuroimaging, UCL"
+
+
+abstract: |
+
+  
+  
+  <!-- https://tinyurl.com/ybremelq -->
+  
+keywords          : "keywords"
+wordcount         : "X"
+
+floatsintext      : no
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : papaja::apa6_word
+bibliography: r-references.bib
+---
+
+
+```{r setup, include = FALSE}
+
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'reticulate',
+    'tidyverse',
+    'broom',
+    'cowplot',
+    'MESS', # for AUCs
+    'lsr', # for effect sizes
+    'pwr', # for power calculations
+    'brms', # for mixed effects modeling
+    'BayesFactor',# for Bayesian t test
+    'jsonlite', #parsing data from sort_trial
+    'afex' #for anova
+  ), "2022-12-01"
+)
+
+```
+
+
+```{r load-and-process}
+source("../analysis/loadAndPreprocessData.R")
+```
+
+```{r RTbyAcc-separate, echo=FALSE, cache=TRUE}
+
+plotRTbyAcc <- function(df, condition_labels, iv_name, exp_label) {
+  
+  RTbyAcc <- df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100) %>%
+  filter(exp_label=='E1' | RT<5000)%>%
+  group_by(subj_id,iv,present,correct) %>%
+  summarise(RT=median(RT))
+  
+  RTbyAcc_summary <- RTbyAcc %>% 
+  group_by(subj_id) %>%
+  mutate(centeredRT = RT-mean(RT))%>%
+  group_by(iv,present,correct) %>%
+  summarise(mean_RT=mean(RT, na.rm=T),
+            se_RT = se(centeredRT, na.rm=T)) %>%
+  mutate(present=factor(present, levels=c(1,0),labels=c('present','absent')),
+         correct = factor(correct, levels=c(1,0), labels=c('correct','incorrect')),
+         iv=factor(iv,levels=c(1,0), labels=condition_labels))
+  
+  RTbyAcc_plot <- RTbyAcc_summary %>% 
+  ggplot(aes(x=iv, 
+             y=mean_RT, 
+             color=present,
+             linetype=correct,
+             group=correct)) +
+  geom_line(size=1.3)+
+  geom_errorbar(aes(ymin=mean_RT-se_RT,ymax=mean_RT+se_RT))+
+  scale_color_manual(values=c("#377eb8", "#E41a1c"))+
+  # scale_alpha_manual(values=c(1,0.8,0.6,0.4))+
+  facet_grid(~present)+
+  labs(x=iv_name,
+       y='RT (ms)',
+       title=paste(exp_label, ': RT by accuracy',sep=''))+
+  theme_bw() +
+  theme(legend.pos='na')
+  
+  ggsave(paste('figures/',exp_label,'RTbyAcc.png',sep=''),RTbyAcc_plot,width=3.5,height=3.5);
+  
+  return(RTbyAcc)
+}
+
+
+E1.RT_RTbyAcc <- plotRTbyAcc(E1.df %>%
+                mutate(iv=ifelse(hide_proportion==0.05,1,0)), 
+              c('5%','15%'),
+              'proportion_occluded',
+              'E3')
+E2.RT_RTbyAcc <- plotRTbyAcc(E2.df %>%
+                mutate(iv=ifelse(hide_proportion==0.10,1,0)), 
+              c('2','6'),
+              'occluded rows',
+              'E4')
+E3.RT_RTbyAcc <- plotRTbyAcc(E3.df %>%
+                mutate(iv=ifelse(hide_proportion==0.10,1,0)), 
+              c('2','6'),
+              'occluded rows',
+              'E6')
+
+E3a.RT_RTbyAcc <- plotRTbyAcc(E3a.df %>%
+                mutate(iv=ifelse(hide_proportion==0.10,1,0)), 
+              c('2','6'),
+              'occluded rows',
+              'E6a')
+```
+
+\newpage
+
+# References
+
+```{=tex}
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+```
+::: {#refs custom-style="Bibliography"}
+:::
+
+```{=tex}
+\endgroup
+```

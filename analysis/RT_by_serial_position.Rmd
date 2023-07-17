@@ -1,0 +1,68 @@
+```{r setup, include = FALSE}
+
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'reticulate',
+    'tidyverse',
+    'broom',
+    'cowplot',
+    'MESS', # for AUCs
+    'lsr', # for effect sizes
+    'pwr', # for power calculations
+    'brms', # for mixed effects modeling
+    'BayesFactor',# for Bayesian t test
+    'jsonlite', #parsing data from sort_trial
+    'afex' #for anova
+  ), "2022-12-01"
+)
+r_refs("r-references.bib")
+
+```
+
+```{r load-and-process}
+source("../analysis/loadAndPreprocessData.R")
+```
+
+
+
+```{r first_trials, echo=FALSE, cache=TRUE}
+
+
+E1.first_trials <- E1.df %>%
+  filter((test_part=='test1') & RT>100 & correct) %>%
+  group_by(subj_id,hide_proportion,resp) %>%
+  summarise(RT = RT[trial_index==min(trial_index)])
+
+E1.occlusion_effects_first_trials <- E1.first_trials %>%
+  group_by(subj_id, resp) %>%
+  summarise(diff = RT[hide_proportion==0.05]-RT[hide_proportion==0.15]) %>%
+  pivot_wider(names_from=resp,values_from=diff)
+
+E1.summary_first_trials <- E1.first_trials %>% 
+  group_by(subj_id) %>%
+  mutate(centeredRT = RT-mean(RT))%>%
+  group_by(hide_proportion,resp) %>%
+  summarise(mean_RT=mean(RT, na.rm=T),
+            se_RT = se(centeredRT, na.rm=T)) %>%
+  mutate(resp=factor(resp, levels=c(TRUE,FALSE),
+                     labels=c('present','absent')),
+         hide_proportion=factor(hide_proportion,levels=c(0.05,0.15)))
+
+E1.first_trials_plot <- E1.summary_first_trials %>% 
+  ggplot(aes(x=hide_proportion, 
+             y=mean_RT,
+             group=resp)) +
+  geom_line(size=1.3)+
+  geom_errorbar(aes(ymin=mean_RT-se_RT,ymax=mean_RT+se_RT))+
+  facet_grid(~resp)+
+  labs(x='',
+       y='RT')+
+  theme_bw() +
+  theme(legend.pos='na')
+
+ggsave('../docs/figures/E1first_trials.png',E1.first_trials_plot,width=3.5,height=3.5);
+
+
+```
