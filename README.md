@@ -26,16 +26,16 @@ protocol sum: e420455976659d9a46582ea0f7a64ba9e33810d90786c5157e2a188e8dcdd7c0
 ### Exp. 2
 [protocol folder](https://github.com/matanmazor/reverseCorrelation/blob/cbba2d43c2ddfb0c021ee0c15b7d5b03eddd34d8/experiments/Experiment2/protocol_folder.zip)
 
-protocol sum: f078aa2862041786868ef9f2ad23336df49386eb98fe8259951830bdf7c3dbfd
+protocol sum: bf72004d226b7a89a2085b0d6238a8d9b9c638513127a47fd44c6a7d00112b2f
 
-[relevant pre-registration lines of code](https://github.com/matanmazor/reverseCorrelation/blob/cbba2d43c2ddfb0c021ee0c15b7d5b03eddd34d8/experiments/Experiment2/webpage/ZylbRep.html#L677-L687)
+[relevant pre-registration lines of code](https://github.com/matanmazor/counterfactualVisibility/blob/41b46eabd6e3eb9609519be0743b34c137c7231e/experiments/Exp2rows/protocolFolder/webpage/index.html#L513-L525)
 
 ### Exp. 3
-[protocol folder](https://github.com/matanmazor/reverseCorrelation/blob/cbba2d43c2ddfb0c021ee0c15b7d5b03eddd34d8/experiments/Experiment3/protocol_folder.zip)
+[protocol folder](https://github.com/matanmazor/counterfactualVisibility/blob/main/experiments/Exp3reference/protocolFolder.zip)
 
-protocol sum: c8c398e9134c072a7c73ea6a24f87079609999df2a40e52c19f94e3d98a58d2c;
+protocol sum: 2be4e2548db0a221a06c936fbba47cecd28894e0400477ac4f580222b77a4a44
 
-[relevant pre-registration lines of code](https://github.com/matanmazor/reverseCorrelation/blob/cbba2d43c2ddfb0c021ee0c15b7d5b03eddd34d8/experiments/Experiment3/webpage/main.js#L682-L692)
+[relevant pre-registration lines of code](https://github.com/matanmazor/counterfactualVisibility/blob/41b46eabd6e3eb9609519be0743b34c137c7231e/experiments/Exp3reference/webpage/index.html#L466-L478)
 
 
 
