@@ -8,6 +8,8 @@ Matan Mazor 👓 & Clare Press 🕶️
 A series of experiments looking at the effects of factual and counterfactual visibility on detection. 
 The experiments in this repository are a subset of the [detection in context](https://github.com/matanmazor/detectionInContext) experiments.
 
+## Data
+Raw data from all four experiments is available on the project's OSF repository: [osf.io/7v2d6/](https://osf.io/7v2d6/)
 ## Analysis Scripts
 A fully reproducible data-to-paper code (in R and Rmarkdown) is available in the ['docs'](https://github.com/matanmazor/counterfactualVisibility/blob/main/docs/occlusion.Rmd) subdirectory.
 
