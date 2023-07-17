@@ -1,3 +1,5 @@
+![mit](https://img.shields.io/badge/License-MIT-blue.svg)
+
 # Counterfactual Visibility
 Matan Mazor 🧱 & Clare Press 🪟
 
