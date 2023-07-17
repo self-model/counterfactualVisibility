@@ -30,12 +30,16 @@ protocol sum: bf72004d226b7a89a2085b0d6238a8d9b9c638513127a47fd44c6a7d00112b2f
 
 [relevant pre-registration lines of code](https://github.com/matanmazor/counterfactualVisibility/blob/41b46eabd6e3eb9609519be0743b34c137c7231e/experiments/Exp2rows/protocolFolder/webpage/index.html#L513-L525)
 
+⚠️ Notice that the long version of Exp. 2 was not pre-registered. 
+
 ### Exp. 3
 [protocol folder](https://github.com/matanmazor/counterfactualVisibility/blob/main/experiments/Exp3reference/protocolFolder.zip)
 
 protocol sum: 2be4e2548db0a221a06c936fbba47cecd28894e0400477ac4f580222b77a4a44
 
 [relevant pre-registration lines of code](https://github.com/matanmazor/counterfactualVisibility/blob/41b46eabd6e3eb9609519be0743b34c137c7231e/experiments/Exp3reference/webpage/index.html#L466-L478)
+
+⚠️ Notice that the long version of Exp. 3 was not pre-registered. 
 
 
 
