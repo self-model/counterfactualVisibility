@@ -48,3 +48,6 @@ rsconnect/
 
 # Data
 **/data/*
+
+# Word temporary files
+~$*
