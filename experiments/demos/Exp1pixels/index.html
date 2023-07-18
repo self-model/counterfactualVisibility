@@ -462,6 +462,7 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
         type: jsPsychExternalHtml,
         url: "prerng_demo.html",
         cont_btn: "start",
+        execute_script: true,
         on_finish: (data)=>{
           var m = new MersenneTwister();
           Math.random = function() {return m.random()};
