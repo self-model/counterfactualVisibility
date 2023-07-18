@@ -21,29 +21,5 @@
   <input type="button"  id= "start" value="Initialize RNG seed, randomise and start Experiment" onclick="startExperiment()">
 </form>
 
-<script>
-
-function hexToBytes(hex) {
-    for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
-    return bytes;
-};
-
-function startExperiment() {
-  // Access the form elements
-  var form = document.getElementById('experimentForm');
-  var protocolSum = form.elements.protocol_sum.value;
-  var subjectId = form.elements.subj_id.value;
-
-  // Assign the values to window object
-  window.protocol_sum = protocolSum;
-  window.subj_id = subjectId;
-
-  // You can use console.log to test
-  console.log(window.protocol_sum);
-  console.log(window.subj_id);
-}
-</script>
-
 </body>
 </html>
