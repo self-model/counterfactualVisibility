@@ -12,9 +12,14 @@
     <script src="jspsych/plugin-image-keyboard-response.js"></script>
     <script src="jspsych/plugin-survey-text.js"></script>
     <script src="jspsych/plugin-test.js"></script>
+    <script src="jspsych/plugin-external-html.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Corben&family=Quicksand&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap" rel="stylesheet">
     <link href="style.css" rel="stylesheet" type="text/css"></link>
+
+    <script src="mersenne-twister.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
   </head>
   <body></body>
   <script>
@@ -446,9 +451,36 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
       return array;
     }
 
-    timeline=makeTimeline();
-    jsPsych.run(timeline);
+    function hexToBytes(hex) {
+        for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+        return bytes;
+    };
 
+    jsPsych.run([
+      {
+        type: jsPsychExternalHtml,
+        url: "prerng_demo.html",
+        cont_btn: "start",
+        on_finish: (data)=>{
+          var m = new MersenneTwister();
+          Math.random = function() {return m.random()};
+          var protocol_sum = window.protocol_sum
+          console.log(protocol_sum)
+          var subject_identifier = window.subj_id
+          console.log(subject_identifier)
+          subject_sum = hexToBytes(
+            CryptoJS.SHA256(
+              protocol_sum+subject_identifier).toString()
+            );
+          m.init_by_array(subject_sum, subject_sum.length);
+          jsPsych.data.addProperties({'protocol_sum':protocol_sum,
+          'subject_identifier':subject_identifier, 'subject_sum':subject_sum});
+          timeline=makeTimeline();
+          jsPsych.run(timeline);
+        }
+      }
+    ])
 
   </script>
 </html>

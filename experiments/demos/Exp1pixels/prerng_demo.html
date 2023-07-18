@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Corben&family=Quicksand&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap" rel="stylesheet">
+  <link href="style.css" rel="stylesheet" type="text/css"></link>
+
+  <script src="mersenne-twister.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+
+</head>
+<body>
+
+<form id="experimentForm">
+  <label for="protocol_sum">Protocol Sum (hash of pre-registration folder):</label><br>
+  <input type="text" id="protocol_sum" name="protocol_sum" value="e420455976659d9a46582ea0f7a64ba9e33810d90786c5157e2a188e8dcdd7c0" size=80><br>
+  <label for="subj_id">Subject ID:</label><br>
+  <input type="text" id="subj_id" name="subj_id" value="250693" size=10><br>
+</br>
+  <input type="button"  id= "start" value="Initialize RNG seed, randomise and start Experiment" onclick="startExperiment()">
+</form>
+
+<script>
+
+function hexToBytes(hex) {
+    for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+    return bytes;
+};
+
+function startExperiment() {
+  // Access the form elements
+  var form = document.getElementById('experimentForm');
+  var protocolSum = form.elements.protocol_sum.value;
+  var subjectId = form.elements.subj_id.value;
+
+  // Assign the values to window object
+  window.protocol_sum = protocolSum;
+  window.subj_id = subjectId;
+
+  // You can use console.log to test
+  console.log(window.protocol_sum);
+  console.log(window.subj_id);
+}
+</script>
+
+</body>
+</html>
