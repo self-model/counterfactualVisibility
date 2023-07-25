@@ -7,7 +7,7 @@
     <script src="jspsych/plugin-fullscreen.js"></script>
     <script src="jspsych/plugin-preload.js"></script>
     <script src="jspsych/plugin-instructions.js"></script>
-    <script src="jspsych/plugin-noisy-letter-row-occluders-confidence.js"></script>
+    <script src="jspsych/plugin-noisy-letter-row-occluders-confidence-passive.js"></script>
     <script src="jspsych/plugin-html-keyboard-response.js"></script>
     <script src="jspsych/plugin-image-keyboard-response.js"></script>
     <script src="jspsych/plugin-survey-text.js"></script>
@@ -56,6 +56,8 @@
 
       window.followed_confidence = false;
       window.comprehension_visits = 0;
+
+      window.click_number=0
 
 
       timeline = [];
@@ -542,7 +544,7 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
             .then(response => response.json())
             .then(data => {
               window.responses=data
-              window.myresponses=data[window_subj_id]
+              window.myresponses=data[window.subj_id]
             })
             .catch((error) => {
               console.error('Error:', error);
