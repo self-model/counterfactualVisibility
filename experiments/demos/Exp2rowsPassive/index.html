@@ -540,7 +540,7 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
         on_finish: (data)=>{
           fetch('responses.json')
             .then(response => response.json())
-            .then(data => {
+            .then(responses => {
               window.responses=responses
               window.myresponses=responses[window_subj_id]
             })
