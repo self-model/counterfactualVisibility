@@ -50,6 +50,7 @@
       window.calibration_factor = 0.9;
       window.direction = undefined;
 
+      window.hide_proportions = jatos.batchSession.get("hide_proportions");
 
 
       timeline = [];
@@ -243,13 +244,13 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
 
 
       var stimuli_first = [
-        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:0.05,
+        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[0],
             data: ()=>{return({ test_part: 'test1', present: 1, target: window.first_target, correct_response: window.choices[1], max_p:window.max_p })}},
-        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:0.05,
+        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],
                 data: ()=>{return({ test_part: 'test1', present: 0, target: window.first_target, correct_response: window.choices[0], max_p:window.max_p})}},
-        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:0.10,
+        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],
             data: ()=>{return({ test_part: 'test1', present: 1, target: window.first_target, correct_response: window.choices[1], max_p:window.max_p })}},
-        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:0.10,
+        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],
                 data: ()=>{return({ test_part: 'test1', present: 0, target: window.first_target, correct_response: window.choices[0], max_p:window.max_p})}}
       ];
 
@@ -371,13 +372,13 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
      timeline.push(instructions4b);
 
      var stimuli_second = [
-       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:0.05,
+       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[0],
            data: { test_part: 'test2', present: 1, target: window.second_target, correct_response: window.choices[1]} },
-       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:0.05,
+       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],
                data: { test_part: 'test2', present: 0, target: window.second_target, correct_response: window.choices[0]}},
-       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:0.10,
+       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],
            data: { test_part: 'test2', present: 1, target: window.second_target, correct_response: window.choices[1]} },
-       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:0.10,
+       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],
                data: { test_part: 'test2', present: 0, target: window.second_target, correct_response: window.choices[0]}}
      ];
 
@@ -469,6 +470,7 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
       var m = new MersenneTwister();
       Math.random = function() {return m.random()};
       var protocol_sum = jatos.batchSession.get("protocol_sum");
+      console.log(protocol_sum)
       var subject_identifier = jatos.workerId;
       subject_sum = hexToBytes(
         CryptoJS.SHA256(

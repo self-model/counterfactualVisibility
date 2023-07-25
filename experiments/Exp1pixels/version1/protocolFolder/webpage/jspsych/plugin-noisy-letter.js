@@ -178,9 +178,11 @@ var jsNoisyLetter = (function (jspsych) {
           // determine which pixels to hide
 
           var total_number_of_pixels = this.img.height*this.img.width;
+          console.log(this.img.height);
+          console.log(this.img.width)
           var number_of_pixels_to_hide = Math.round(total_number_of_pixels*trial.hide_proportion)
           trial.hidden_pixels = p.shuffle([...Array(total_number_of_pixels).keys()]).slice(0,number_of_pixels_to_hide)
-
+          console.log(trial.hidden_pixels)
 
           p.textSize(this.img.height*trial.pixel_size_factor);
 
@@ -202,7 +204,7 @@ var jsNoisyLetter = (function (jspsych) {
               var presented_row = [];
               for (let x = 0; x < this.img.width; x++) {
                 p.push()
-                if (trial.hidden_pixels.includes(x*this.img.width+y)) {
+                if (trial.hidden_pixels.includes(y*this.img.width+x)) {
                   p.fill(trial.hide_color)
                   presented_row.push(NaN);
                 } else {
