@@ -327,8 +327,9 @@ var jsNoisyLetter = (function (jspsych) {
 
             // emulate responses
             if ((p.millis()-window.start_time >= trial.RT) & window.clicked==0) {
+              console.log('clicked')
               window.clicked=1
-              trial.response=window.myresponses[window.click_number]
+              trial.response=window.myresponses.response[window.click_number]
               window.click_number++
               window.trial_data = {
                 presented_pixel_data: window.presented_pixel_data,
