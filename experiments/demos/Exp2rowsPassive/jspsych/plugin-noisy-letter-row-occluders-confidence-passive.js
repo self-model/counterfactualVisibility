@@ -216,10 +216,9 @@ var jsNoisyLetter = (function (jspsych) {
           p.imageMode(p.CENTER);
           p.noCursor();
           trial.response  = NaN;
-          console.log(trial.response)
           trial.RT = window.myresponses.RT[window.click_number];
           console.log(trial.RT)
-          window.clicked==0
+          window.clicked=0
 
           draw_choices(trial.response)
           this.img.loadPixels();
@@ -330,6 +329,7 @@ var jsNoisyLetter = (function (jspsych) {
               console.log('clicked')
               window.clicked=1
               trial.response=window.myresponses.response[window.click_number]
+              console.log(trial.response)
               window.click_number++
               window.trial_data = {
                 presented_pixel_data: window.presented_pixel_data,

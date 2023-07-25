@@ -510,49 +510,49 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
     };
 
     jsPsych.run([
-      {
-        type: jsPsychExternalHtml,
-        url: "prerng_demo.html",
-        cont_btn: "start",
-        execute_script: true,
-        check_fn: ()=>{
-          var form = document.getElementById('experimentForm');
-          var protocolSum = form.elements.protocol_sum.value;
-          var subjectId = form.elements.subj_id.value;
+    {
+      type: jsPsychExternalHtml,
+      url: "prerng_demo.html",
+      cont_btn: "start",
+      execute_script: true,
+      check_fn: ()=>{
+        var form = document.getElementById('experimentForm');
+        var protocolSum = form.elements.protocol_sum.value;
+        var subjectId = form.elements.subj_id.value;
 
-          // Assign the values to window object
-          window.protocol_sum = protocolSum;
-          window.subj_id = subjectId;
-          var m = new MersenneTwister();
-          Math.random = function() {return m.random()};
-          var protocol_sum = window.protocol_sum
-          console.log(protocol_sum)
-          var subject_identifier = window.subj_id
-          console.log(subject_identifier)
-          subject_sum = hexToBytes(
-            CryptoJS.SHA256(
-              protocol_sum+subject_identifier).toString()
-            );
-          m.init_by_array(subject_sum, subject_sum.length);
-          jsPsych.data.addProperties({'protocol_sum':protocol_sum,
-          'subject_identifier':subject_identifier, 'subject_sum':subject_sum});
-          window.timeline=makeTimeline();
-          return true
-        },
-        on_finish: (data)=>{
-          fetch('responses.json')
-            .then(response => response.json())
-            .then(data => {
-              window.responses=data
-              window.myresponses=data[window.subj_id]
-            })
-            .catch((error) => {
-              console.error('Error:', error);
-            })
-          jsPsych.run(window.timeline);
-        }
+        // Assign the values to window object
+        window.protocol_sum = protocolSum;
+        window.subj_id = subjectId;
+        var m = new MersenneTwister();
+        Math.random = function() {return m.random()};
+        var protocol_sum = window.protocol_sum
+        console.log(protocol_sum)
+        var subject_identifier = window.subj_id
+        console.log(subject_identifier)
+        subject_sum = hexToBytes(
+          CryptoJS.SHA256(
+            protocol_sum+subject_identifier).toString()
+          );
+        m.init_by_array(subject_sum, subject_sum.length);
+        jsPsych.data.addProperties({'protocol_sum':protocol_sum,
+        'subject_identifier':subject_identifier, 'subject_sum':subject_sum});
+        window.timeline=makeTimeline();
+        return true
+      },
+      on_finish: (data)=>{
+        fetch('responses.json')
+          .then(response => response.json())
+          .then(data => {
+            window.responses=data
+            window.myresponses=data[window.subj_id]
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          })
+        jsPsych.run(window.timeline);
       }
-    ])
+    }
+  ])
 
 
   </script>
