@@ -540,9 +540,9 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
         on_finish: (data)=>{
           fetch('responses.json')
             .then(response => response.json())
-            .then(responses => {
-              window.responses=responses
-              window.myresponses=responses[window_subj_id]
+            .then(data => {
+              window.responses=data
+              window.myresponses=data[window_subj_id]
             })
             .catch((error) => {
               console.error('Error:', error);
