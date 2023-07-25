@@ -1,0 +1,115 @@
+
+<!doctype html>
+<html>
+<!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script> -->
+<!-- <head>
+<link href="style.css" rel="stylesheet" type="text/css"></link>
+</head> -->
+<head>
+  <script src="jatos.js"></script>
+  <script src="jquery/jquery.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Corben&family=Quicksand&display=swap" rel="stylesheet">
+</head>
+<title>Information Page</title>
+<body>
+<style>
+
+body {
+  background-color: rgb(128, 128,128);
+  color: white;
+  font-family: 'Quicksand', sans-serif;
+}
+
+div {
+    width: 800px;
+    margin: 50px auto 50px auto;
+    }
+
+
+
+h1 {
+text-align: center;
+font-family: tahoma;
+font-size:15pt
+}
+
+p {
+    margin-right: 150px;
+    margin-left: 50px;
+    font-family: 'Quicksand', sans-serif;
+
+}
+
+
+p.gentext {
+    line-height: 120%;
+	font-family: calibri;
+	font-size: 12pt;
+	margin-right: 50px;
+	margin-left: 50px;
+	align: justify;
+}
+
+</style>
+<div>
+
+
+  <p>Before you decide to take part in this study, it is important for you to understand why the research is being done and what it will involve. Please take the time to read the following information carefully and discuss it with others if you wish. A member of the research team can be contacted if there is anything that is not clear or if you would like more information. Take time to decide whether or not you wish to take part.</p>
+
+  <p>This experiment is investigating peoples’ abilities to perform actions and to quickly and accurately respond to visual stimuli. You will be presented with events onscreen, and will be asked to report when you see these events, as quickly and accurately as you can. You should prioritise accuracy but also aim for responding as quickly as possible.</p>
+
+  <p>There are no disadvantages or risks involved in taking part in the study.</p>
+
+  <p>The results of this project will be written up for publication, and they will possibly be disseminated at conferences.  You will be given a participation number which will be used to process any data provided by you, to ensure your participation remains fully anonymous.</p>
+
+  <p>You have the right to withdraw participation at any point up until the point that the anonymised data can no longer be identified.</p>
+
+	<p><strong>Principal investigator contact details:</strong> Clare Press (c.press@bbk.ac.uk)</p>
+
+  <p>For information about Birkbeck’s data protection policy please visit: http://www.bbk.ac.uk/about-us/policies/privacy</p>
+
+  <p>If you have concerns about this study, please contact the School’s Ethics Officer at: ethics@psychology.bbk.ac.uk;
+School Research Officer
+School of Science, Department of Psychological Sciences
+ Birkbeck, University of London
+London WC1E 7HX.
+
+You also have the right to submit a complaint to the Information Commissioner’s Office
+https://ico.org.uk/
+</p>
+
+	<p>	Click here to print this page:
+	<input type='button'
+	onClick='window.print()'
+	class='printbutton'
+	value='Print'/></p>
+
+<div id="buttons">
+    <button id="agreeButton">I agree</button>
+    <button id="cancelButton">Cancel</button>
+</div>
+
+<script type="text/javascript">
+    jatos.onLoad(function() {
+        $("#text").html(jatos.componentJsonInput.text);
+        $("#buttons").show();
+    });
+
+    $('#agreeButton').click(function() {
+        var result = "Consent given.";
+        jatos.submitResultData(result, jatos.startNextComponent);
+    });
+
+    $('#cancelButton').click(function() {
+        jatos.abortStudy("Consent not given.");
+    });
+</script>
+
+</div>
+
+
+
+
+	</body>
+
+</html>
