@@ -216,7 +216,9 @@ var jsNoisyLetter = (function (jspsych) {
           p.imageMode(p.CENTER);
           p.noCursor();
           trial.response  = window.myresponses.response[window.click_number];
+          console.log(trial.response)
           trial.RT = window.myresponses.RT[window.click_number];
+          console.log(trial.RT)
           draw_choices(trial.response)
           this.img.loadPixels();
 
