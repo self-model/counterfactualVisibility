@@ -501,6 +501,12 @@ whether the letter <b>${window.first_target}</b> appeared in the noise or not. p
       return array;
     }
 
+    function hexToBytes(hex) {
+        for (var bytes = [], c = 0; c < hex.length; c += 2)
+        bytes.push(parseInt(hex.substr(c, 2), 16));
+        return bytes;
+    };
+
     jsPsych.run([
       {
         type: jsPsychExternalHtml,
