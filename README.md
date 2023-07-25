@@ -40,8 +40,6 @@ protocol sum: bf72004d226b7a89a2085b0d6238a8d9b9c638513127a47fd44c6a7d00112b2f
 
 [relevant pre-registration lines of code](https://github.com/matanmazor/counterfactualVisibility/blob/41b46eabd6e3eb9609519be0743b34c137c7231e/experiments/Exp2rows/protocolFolder/webpage/index.html#L513-L525)
 
-Since randomization depends response times (more random luminance values are sampled when responses are slow, affecting the order of later trials), we include [a "passive" demo](https://matanmazor.github.io/counterfactualVisibility/experiments/demos/Exp2rowsPassive) where decisions and decision times are set according to the behaviour of a specified participant. Critically, all other aspects are controlled by the pseudo-random number generator and by the choice of the initial seed. 
-
 ⚠️ Notice that the long version of Exp. 2 was not pre-registered. 
 
 ### Exp. 3
