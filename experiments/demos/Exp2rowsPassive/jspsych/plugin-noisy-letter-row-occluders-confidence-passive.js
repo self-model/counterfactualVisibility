@@ -215,10 +215,12 @@ var jsNoisyLetter = (function (jspsych) {
           p.rectMode(p.TOP, p.LEFT);
           p.imageMode(p.CENTER);
           p.noCursor();
-          trial.response  = window.myresponses.response[window.click_number];
+          trial.response  = NaN;
           console.log(trial.response)
           trial.RT = window.myresponses.RT[window.click_number];
           console.log(trial.RT)
+          window.clicked==0
+
           draw_choices(trial.response)
           this.img.loadPixels();
 
@@ -322,6 +324,23 @@ var jsNoisyLetter = (function (jspsych) {
             p.translate(window.innerWidth/2,window.innerHeight/2)
 
             draw_choices(trial.response)
+
+            // emulate responses
+            if ((p.millis()-window.start_time >= trial.RT) & window.clicked==0) {
+              window.clicked=1
+              trial.response=window.myresponses[window.click_number]
+              window.click_number++
+              window.trial_data = {
+                presented_pixel_data: window.presented_pixel_data,
+                RT: trial.RT,
+                response: trial.response,
+                context_string: trial.context_string,
+                context_img: trial.context_image,
+                max_p: trial.max_p,
+                hide_proportion: trial.hide_proportion,
+                descend: trial.descend
+              };
+            }
           } else if (trial.rate_confidence & window.confidence==-1) {
 
             window.trial_part = 'rating confidence';
