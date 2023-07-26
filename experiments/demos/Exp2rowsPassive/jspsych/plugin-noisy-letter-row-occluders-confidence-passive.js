@@ -217,8 +217,10 @@ var jsNoisyLetter = (function (jspsych) {
           p.noCursor();
           trial.response  = NaN;
           trial.RT = window.myresponses.RT[window.click_number];
+          trial.nframes = window.myresponses.nframes[window.click_number]
           console.log(trial.RT)
           window.clicked=0
+          window.frame_index = 0
 
           draw_choices(trial.response)
           this.img.loadPixels();
@@ -258,7 +260,10 @@ var jsNoisyLetter = (function (jspsych) {
         }
 
         p.draw = () => {
-          if (p.millis()-window.start_time < trial.RT + trial.post_click_delay) {
+          // if (p.millis()-window.start_time < trial.RT + trial.post_click_delay) {
+          if (window.frame_index<=trial.nframes) {
+
+            window.frame_index++
 
             window.trial_part='display stimulus';
 
