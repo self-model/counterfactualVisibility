@@ -8,11 +8,11 @@
     <script src="jspsych/plugin-fullscreen.js"></script>
     <script src="jspsych/plugin-preload.js"></script>
     <script src="jspsych/plugin-instructions.js"></script>
-    <script src="jspsych/plugin-noisy-letter-row-occluders-reference-confidence-passive.js"></script>
+    <script src="jspsych/plugin-noisy-letter-passive.js"></script>
     <script src="jspsych/plugin-html-keyboard-response.js"></script>
-    <script src="jspsych/plugin-survey-text.js"></script>
+    <script src="jspsych/plugin-image-keyboard-response.js"></script>
     <script src="jspsych/plugin-external-html.js"></script>
-    <script src="jspsych/plugin-survey-multi-choice.js"></script>
+    <script src="jspsych/plugin-survey-text.js"></script>
     <script src="jspsych/plugin-test.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Corben&family=Quicksand&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap" rel="stylesheet">
@@ -28,30 +28,28 @@
       jsPsych.data.addProperties({first_target: window.first_target,
       second_target: window.second_target,
       practice_loops: window.practice_loop,
-      comprehension_visits:window.comprehension_visits,
       presence_key:window.choices[1]});
-      jsPsych.data.get().localSave('json','mydata.json');
+      jsPsych.data.get().localSave('csv','mydata.csv');
     }});
-
 
 
     function makeTimeline() {
 
+      window.stimulus_number = 0;
       window.choices = Math.random()>0.5? ['g','f'] : ['f','g'];
       window.first_target = Math.random()>0.5? 'A' : 'S'
       window.second_target = window.first_target=='A'? 'S' : 'A';
       window.practice_loop=0;
       window.practice2_loop=0;
 
-      window.max_p = [0.30,0.30,0.30];
-      window.hide_proportions = [0.1,0.35]
-      window.descend = false
+      window.max_p = 0.3;
+      window.last_three_trials = [false, false, false]; //for online calibration
+      window.calibration_factor = 0.9;
+      window.direction = undefined;
 
-      window.followed_instructions = false;
-      window.comprehension_visits = 0;
+      window.hide_proportions = [0.05,0.15];
 
       window.click_number=0
-
 
 
       timeline = [];
@@ -70,7 +68,7 @@
       timeline.push({
         type: jsPsychFullscreen,
         fullscreen_mode: true,
-        message: `<p>The experiment will switch to full screen mode when you press the button below. Please do not exit the full screen mode until the end of the experiment.</p>`
+        message: `<p>The experiment will switch to full screen mode when you press the button below. Please do not exit the full screen mode until the end fo the experiment.</p>`
       });
 
       var format_instructions = (s) => {return(s+'<footer>Use the right arrow key on your keyboard to navigate to the next screen.</footer>')};
@@ -80,33 +78,15 @@
           pages: [
           format_instructions(`<h1>Welcome!</h1>
           <p>In this experiment, we will show you some noisy images and then ask you to make judgments about them. The experiment consists of 4 parts and should take about 10 minutes to complete.</p>`),
-          format_instructions(`<p>Each time, we will show you three patterns of gray squares. We call them 'noisy patterns', because the position and color of the squares are random.</p>
-          <p>The right and left noisy patterns will <u>always</u> contain the letter <b>${window.first_target}</b>, but the one in the center will contain the letter <b>${window.first_target}</b> only sometimes, and in other times it will just be noise.</p>`),
+          format_instructions(`<p>Each time, we will show you a pattern of gray squares. We call this 'noise', because the position and color of the squares are random.</p>
+          <p>Sometimes, the noise will contain the letter <b>${window.first_target}</b>, and sometimes it won't.</p>`),
           format_instructions(`<p>Put the middle and index fingers of your left hand on the F and G keys on your keyboard.</p>
-          <p>Now, pay close attention and press '${window.choices[1].toUpperCase()}' if the central noisy pattern contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>Let's start with four practice trials.</p>
+          <p>Now, pay close attention and press '${window.choices[1].toUpperCase()}' if the noise contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>Let's start with four practice trials.</p>
           <p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>`)
           ],
           show_clickable_nav: false
       };
       timeline.push(instructions);
-
-      var multichoice_comprehension = {
-        type: jsPsychSurveyMultiChoice,
-        questions: [{
-        prompt: `<p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>
-        <p>I should press ${window.choices[0].toUpperCase()} exactly when...</p>`,
-        options: [`1. The central noisy pattern does not contain the letter <b>${window.first_target}</b>.`,
-                  `2. Any of the three noisy patterns does not contain the letter <b>${window.first_target}</b>.`,
-                  `3. All of the three noisy patterns contain the letter <b>${window.first_target}</b>.`,
-                  `4. None of the three noisy patterns contains the letter <b>${window.first_target}</b>.`
-                ],
-        name: 'multichoice_comprehension'
-      }],
-      on_finish: function(data){
-          window.followed_instructions = data.response.multichoice_comprehension[0]=='1';
-          window.comprehension_visits++
-      }
-      }
 
       var fixation = {
         type: jsPsychHtmlKeyboardResponse,
@@ -119,22 +99,23 @@
         type: jsNoisyLetter,
         choices: window.choices,
         context_string: '',
-        max_p: [0.30,0.30,0.30],
+        max_p: 0.35,
         flat: true,
         present: jsPsych.timelineVariable('present'),
         data: jsPsych.timelineVariable('data'),
         image: jsPsych.timelineVariable('image'),
-        rate_confidence: jsPsych.timelineVariable('rate_confidence'),
         on_finish: function(data){
           data.correct = data.response == data.correct_response;
         }
       };
 
+      // var letter_present_p_function = (p,n)=>{return (frame_number)=>{return p/(1+Math.exp(-0.1*(frame_number-n)))}}
+      // var letter_absent_p_function = (frame_number)=>{return 0}
 
       var practice_stimuli = [
-        { present:1, image: `img/${window.first_target}.png`,rate_confidence: false,
+        { present:1, image: `img/${window.first_target}.png`,
             data: { test_part: 'practice', present: 1, target: window.first_target, correct_response: window.choices[1]} },
-        { present:0,image: `img/${window.first_target}.png`,rate_confidence: false,
+        { present:0,image: `img/${window.first_target}.png`,
                 data: { test_part: 'practice', present: 0, target: window.first_target, correct_response: window.choices[0]}}
       ];
 
@@ -145,13 +126,13 @@
           var last_trial_present = jsPsych.data.get().last(1).values()[0].present;
 
           if(last_trial_correct & last_trial_present){
-            return "<div style=\"width:400px;height:56px;font-size:30px;text-align:center;\">correct! You detected the letter in the center.</div>";
+            return "<div style=\"width:300px;height:56px;font-size:30px;text-align:center;\">correct! You detected the letter.</div>";
           } else if(!last_trial_correct & last_trial_present) {
-            return "<div style=\"width:400px;height:56px;border:0px;font-size:30px;text-align:center\">wrong. You missed the letter in the center.</div>"
+            return "<div style=\"width:300px;height:56px;border:0px;font-size:30px;text-align:center\">wrong. You missed the letter.</div>"
           } else if(last_trial_correct & !last_trial_present) {
-            return "<div style=\"width:400px;height:56px;border:0px;font-size:30px;text-align:center\">Correct! This was just noise between the two letters.</div>"
+            return "<div style=\"width:300px;height:56px;border:0px;font-size:30px;text-align:center\">Correct! This was just noise.</div>"
           } else if(!last_trial_correct & !last_trial_present) {
-            return "<div style=\"width:400px;height:56px;border:0px;font-size:30px;text-align:center\">Wrong. This was just noise between the two letters.</div>"
+            return "<div style=\"width:300px;height:56px;border:0px;font-size:30px;text-align:center\">Wrong. This was just noise.</div>"
           }
         },
         trial_duration: function(){
@@ -178,29 +159,21 @@
         pages: function() {
            var trials = jsPsych.data.get().last(12).filter({test_part: 'practice'});
            var num_correct = trials.filter({correct: true}).count();
-           if (num_correct<3 & !window.followed_instructions) {
-             var feedback_string = `You got ${num_correct} responses right out of 4 and your response to the comprehension question was incorrect`
-           } else if (num_correct<3 & window.followed_instructions) {
-             var feedback_string = `You got ${num_correct} responses right out of 4`
-
-           } else if (num_correct>2 & !window.followed_instructions) {
-             feedback_string = `You got ${num_correct} responses right out of 4 but your response to the comprehension question was incorrect`
-           }
         return [format_instructions(`<h1>Let's try again</h1>
-      <p>${feedback_string}. Let's try again. Your task is to decide whether the letter <b>${window.first_target}</b> appeared in the noisy pattern in the center, or not.
-      Press ${window.choices[1].toUpperCase()} for yes, and ${window.choices[0].toUpperCase()} for no.</p>
-      <p>Remember that the other two patterns will always contain the letter <b>${window.first_target}</b>.<p>
-      <p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>`)]},
+<p>You got ${num_correct} responses right out of 4. Let's try again. Your task is to decide
+whether the letter <b>${window.first_target}</b> appeared in the noise or not. press ${window.choices[1].toUpperCase()} for yes, and ${window.choices[0].toUpperCase()} for no.</p>
+<p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>`)]
+        },
         show_clickable_nav: false
       };
 
-
       var practice_loop_node = {
-          timeline: [{timeline: [explain_again], conditional_function: function() {return window.practice_loop>0}},
-          {timeline: [practice_block, multichoice_comprehension]}],
+          timeline: [{timeline: [explain_again], conditional_function: function() {return window.practice_loop>0}}, practice_block],
           loop_function: function(data){
+              // get the data from the previous trial,
+              // and check which key was pressed
               var num_correct = data.filter({correct: true}).count();
-              if(num_correct>2 & window.followed_instructions){
+              if(num_correct>2){
                   return false;
               } else {
                  window.practice_loop++
@@ -209,16 +182,15 @@
           }
       }
 
-      timeline.push(practice_loop_node);
+     timeline.push(practice_loop_node)
 
      var instructions2 = {
          type: jsPsychInstructions,
          pages: [
-         format_instructions(`<p>We are now ready for the actual experiment.</p>
-         <p>This time, your task is exactly the same, but to make things a little harder we will hide parts of the display behind black lines.
-         Your task is to ignore the black lines, focus on the noisy patterns behind them, and determine whether the letter <b>${window.first_target}</b> appeared in the central noisy pattern, or not.</p>
-         <p>The right and left patterns will always have the letter <b>${window.first_target}</b> in them, your task is to report the content of the central pattern.</p>`),
-         format_instructions(`<p>Just like before, pay close attention and press '${window.choices[1].toUpperCase()}' if the central pattern contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>We will repeat this 16 times.</p>
+         format_instructions(`<p>Now we are ready for the actual experiment.</p>
+         <p>This time, your task is exactly the same, but to make things a little harder we will hide small parts of the noise behind black squares.
+         Your task is to ignore the black stuff, focus on the noise that is under it, and determine whether the letter <b>${window.first_target}</b> appeared in it or not.</p>`),
+         format_instructions(`<p>Just like before, pay close attention and press '${window.choices[1].toUpperCase()}' if the noise contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>We will repeat this 18 times.</p> <p>From now on, the letters are going to be much harder to see, so brace yourself: it's a real challenge!</p>
          <p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>`)
          ],
 
@@ -229,30 +201,55 @@
       var letters = {
         type: jsNoisyLetter,
         choices: window.choices,
-        descend: window.descend,
         image: jsPsych.timelineVariable('image'),
         context_string: '',
         hide_proportion: jsPsych.timelineVariable('hide_proportion'),
-        rate_confidence: jsPsych.timelineVariable('rate_confidence'),
         max_p: ()=>{return(window.max_p)},
         flat: true,
         present:jsPsych.timelineVariable('present'),
         // p_function: jsPsych.timelineVariable('p_function'),
         on_finish: function(data){
+          data.correct = data.response == data.correct_response;
+          window.stimulus_number++;
+
+          //staircasing procedure
             data.correct = data.response == data.correct_response;
+            //if error, make SOA longer (calibration factor is <1)
+            if (!data.correct) {
+              window.max_p /= calibration_factor;
+              window.max_p = Math.min(1,window.max_p);
+              window.last_three_trials = [false, false,false]
+              if (window.direction=='down') {
+                window.calibration_factor = window.calibration_factor**0.9
+              }
+              window.direction = 'up'
+           // else, if the last two trials were correct, make SOA shorter
+            } else if (last_three_trials[1] & last_three_trials[2]) {
+              window.max_p *= calibration_factor;
+              window.last_three_trials = [false, false,false]
+              if (window.direction=='up') {
+                window.calibration_factor = window.calibration_factor**0.9
+              }
+              window.direction = 'down'
+           // else (last trial was correct, the one before was error), update last_two_trials
+            } else {
+              window.last_three_trials = [window.last_three_trials[1],
+              window.last_three_trials[2],
+              data.correct]
+            }
         },
         data: jsPsych.timelineVariable('data')
       };
 
 
       var stimuli_first = [
-        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[0],rate_confidence:false,
+        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[0],
             data: ()=>{return({ test_part: 'test1', present: 1, target: window.first_target, correct_response: window.choices[1], max_p:window.max_p })}},
-        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],rate_confidence: false,
+        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],
                 data: ()=>{return({ test_part: 'test1', present: 0, target: window.first_target, correct_response: window.choices[0], max_p:window.max_p})}},
-        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],rate_confidence: false,
+        { image: `img/${window.first_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],
             data: ()=>{return({ test_part: 'test1', present: 1, target: window.first_target, correct_response: window.choices[1], max_p:window.max_p })}},
-        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],rate_confidence: false,
+        { image: `img/${window.first_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],
                 data: ()=>{return({ test_part: 'test1', present: 0, target: window.first_target, correct_response: window.choices[0], max_p:window.max_p})}}
       ];
 
@@ -291,8 +288,7 @@
          type: jsPsychInstructions,
          pages: [
          format_instructions(`<h1>Ready to start part 2 out of 4?</h1>
-         <p>We are now ready for part 2. Just like in part 1, pay close attention and press '${window.choices[1].toUpperCase()}' if the central noisy pattern contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p>
-         <p>We will repeat this 16 times.</p>
+         <p>We are now ready for part 2. Just like in part 1, pay close attention and press '${window.choices[1].toUpperCase()}' if the noise contained the letter <b>${window.first_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>We will repeat this 16 times.</p>
          <p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'><p>`)
          ],
 
@@ -305,20 +301,21 @@
          type: jsPsychInstructions,
          pages: [
          format_instructions(`<h1>Ready to start part 3 out of 4?</h1>
-         <p>We are now ready for part 3. Just like in parts 1 and 2, pay close attention and press '${window.choices[1].toUpperCase()}' if the central noisy pattern contained a letter, and '${window.choices[0].toUpperCase()}' if not.</p>`),
-         format_instructions(`<h1>letter change!</h1><p>From now on, the right and left noise patterns will include the letter <b>${window.second_target}</b> on all of the trials, and the central noisy pattern will include the letter <b>${window.second_target}</b> on some trials but not on others.
-           The letter <b>${window.first_target}</b> will never appear.</p><p>Your task is to press '${window.choices[1].toUpperCase()}' if the central noisy pattern contained the letter <b>${window.second_target}</b>, and '${window.choices[0].toUpperCase()}' if not.`),
-         // format_instructions(`<p>An additional change is that from now on, you will rate how confident you are in your decisions. You will do this by controlling the position of a dial on a scale: the more confident you are in your decision, the higher you should place the dial before clicking.</p>`),
-         format_instructions(`<p>Let's practice detecting the letter <b>${window.second_target}</b>.</p>`)
+         <p>We are now ready for part 3. Just like in parts 1 and 2, pay close attention and press '${window.choices[1].toUpperCase()}' if the noise contained a letter, and '${window.choices[0].toUpperCase()}' if not.</p>`),
+          format_instructions(`<h1>letter change!</h1><p>The only thing that changes is the identity of the letter. This time the noise will include the letter <b>${window.second_target}</b> on some trials but not on others. The letter <b>${window.first_target}</b> will never appear.</p>
+          <p>Let's practice detecting the letter <b>${window.second_target}</b>.</p>`)
          ],
-         show_clickable_nav: false
+         show_clickable_nav: false,
+         on_finish: function(data){
+           window.calibration_factor = 0.9
+         }
      };
      timeline.push(instructions4);
 
      var practice2_stimuli = [
-       { present:1, image:`img/${window.second_target}.png`, rate_confidence:false,
+       { present:1, image:`img/${window.second_target}.png`,
            data: { test_part: 'practice', present: 1, target: window.second_target, correct_response: window.choices[1]} },
-       { present:0, image:`img/${window.second_target}.png`, rate_confidence: false,
+       { present:0, image:`img/${window.second_target}.png`,
                data: { test_part: 'practice', present: 0, target: window.second_target, correct_response: window.choices[0]}}
      ];
 
@@ -329,7 +326,6 @@
        randomize_order: true
      };
 
-
      var explain_again2 = {
        type: jsPsychInstructions,
        title: 'Let\'s try again',
@@ -338,14 +334,13 @@
           var num_correct = trials.filter({correct: true}).count();
        return [format_instructions(`<h1>Let's try again</h1>
      <p>You got ${num_correct} responses right out of 4. Let's try again. Your task is to decide
-     whether the letter <b>${window.second_target}</b> (and not ${window.first_target} as before) appeared in the central noisy pattern or not. The two patterns on the side will always include the letter <b>${window.second_target}</b>, but you need to report the content of the one in the center. Press ${window.choices[1].toUpperCase()} for yes, and ${window.choices[0].toUpperCase()} for no.</p>`)]
+     whether the letter <b>${window.second_target}</b> (and not ${window.first_target} as before) appeared in the noise or not. press ${window.choices[1].toUpperCase()} for yes, and ${window.choices[0].toUpperCase()} for no.</p>`)]
        },
        show_clickable_nav: false
      };
 
      var practice2_loop_node = {
-         timeline: [{timeline: [explain_again2], conditional_function: function() {return window.practice2_loop>0}},
-         {timeline: [practice2_block]}],
+         timeline: [{timeline: [explain_again2], conditional_function: function() {return window.practice2_loop>0}}, practice2_block],
          loop_function: function(data){
              // get the data from the previous trial,
              // and check which key was pressed
@@ -364,22 +359,25 @@
      var instructions4b = {
          type: jsPsychInstructions,
          pages: [
-         format_instructions(`<p>Excellent. We will now add the black lines as before, but your task is to ignore those and to decide if the letter <b>${window.second_target}</b> was in the central noisy pattern.</p>
+         format_instructions(`<p>Excellent. We will now add the occluding black squares as before, but your task is to ignore those and to decide if the letter <b>${window.second_target}</b> was in the noise.</p>
          <p>As before, we will do this 16 times. Good luck!</p>
          <p><img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'></p>`)
          ],
-         show_clickable_nav: false
+         show_clickable_nav: false,
+         on_finish: function(data){
+           window.calibration_factor = 0.9
+         }
      };
      timeline.push(instructions4b);
 
      var stimuli_second = [
-       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[0], rate_confidence: false,
+       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[0],
            data: { test_part: 'test2', present: 1, target: window.second_target, correct_response: window.choices[1]} },
-       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],rate_confidence: false,
+       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[0],
                data: { test_part: 'test2', present: 0, target: window.second_target, correct_response: window.choices[0]}},
-       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],rate_confidence: false,
+       { image: `img/${window.second_target}.png`, present: 1, hide_proportion:window.hide_proportions[1],
            data: { test_part: 'test2', present: 1, target: window.second_target, correct_response: window.choices[1]} },
-       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],rate_confidence: false,
+       { image: `img/${window.second_target}.png`, present: 0, hide_proportion:window.hide_proportions[1],
                data: { test_part: 'test2', present: 0, target: window.second_target, correct_response: window.choices[0]}}
      ];
 
@@ -396,7 +394,7 @@
         type: jsPsychInstructions,
         pages: [
         format_instructions(`<h1>Ready to start part 4 out of 4?</h1>
-        <p>We are now ready for part 4. Just like in part 3, pay close attention and press '${window.choices[1].toUpperCase()}' if the central noisy pattern contained the letter <b>${window.second_target}</b>, and '${window.choices[0].toUpperCase()}' if not. </p><p>We will repeat this 16 times.</p>
+        <p>We are now ready for part 4. Just like in part 3, pay close attention and press '${window.choices[1].toUpperCase()}' if the noise contained the letter <b>${window.second_target}</b>, and '${window.choices[0].toUpperCase()}' if not.</p><p>We will repeat this 16 times.</p>
         <img src='img/keyboard_${window.choices[0]+window.choices[1]}.png'>`)
         ],
 
@@ -424,7 +422,7 @@
         pages: [
         `<h1>Thank you!</h1>
         <p>Your contribution will help us to better undrestand how what we believe affects what we perceive.</p>
-        <p>Please press the right arrow key to get a completion code. You will initially see a blank page, <b>please do not close the tab until you are redirected back to Prolific, this might take some time as we are sending your data to the server.</b> </p>`
+        <p>Please press the right arrow key to get a completion code</p>`
         ],
         show_clickable_nav: false
     };
@@ -458,6 +456,9 @@
         return bytes;
     };
 
+
+
+    /* start the experiment */
     jsPsych.run([
     {
       type: jsPsychExternalHtml,
@@ -502,7 +503,6 @@
       }
     }
   ])
-
 
   </script>
 </html>

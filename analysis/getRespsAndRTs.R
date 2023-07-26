@@ -7,6 +7,13 @@ groundhog.library(
   ), "2022-12-01"
 )
 
+E1.df_for_json <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfiles_batch1/all_data.csv')  %>%
+  group_by(subject_identifier,trial_index) %>%
+  filter(trial_type=='noisyLetter' & frame_index==max(frame_index))%>%
+  mutate(RT = as.numeric(RT),
+         nframes=frame_index)  %>%
+  dplyr::select(subject_identifier, RT, nframes, response)
+
 E2.df_for_json <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all_data.csv') %>%
   group_by(subject_identifier,trial_index) %>%
   filter(trial_type=='noisyLetter' & frame_index==max(frame_index))%>%
@@ -15,7 +22,6 @@ E2.df_for_json <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch
   dplyr::select(subject_identifier, RT, nframes, response)
 
 E3.df_for_json <- read_csv('../experiments/Exp3reference/data/jatos_results_files_batch1/all_data.csv') %>%
-
   group_by(subject_identifier,trial_index) %>%
   filter(trial_type=='noisyLetter' & frame_index==max(frame_index))%>%
   mutate(RT = as.numeric(RT),
@@ -45,6 +51,10 @@ makeJson <- function(df,filename) {
   
 }
 
+makeJson(E1.df_for_json,'../experiments/Exp1pixels/data/responses.json')
+
+
 makeJson(E2.df_for_json,'../experiments/Exp2rows/data/responses.json')
   
-  
+makeJson(E3.df_for_json,'../experiments/Exp3reference/data/responses.json')
+
