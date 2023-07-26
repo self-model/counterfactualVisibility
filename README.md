@@ -22,7 +22,9 @@ You can try Experiment 2 (occluded rows) by clicking [here](https://matanmazor.g
 
 You can try Experiment 3 (occluded rows + reference) by clicking [here](https://matanmazor.github.io/counterfactualVisibility/experiments/demos/Exp3reference)
 
-## Pre-registration time-locking 🕝🔒
+## Pre-registration and pre-registration time-locking 🕝🔒
+
+OSF pre-registrations are available for [Exp. 1](https://osf.io/e6x82) (Exp. 3 in the Detection in Context OSF project), [Exp. 2](https://osf.io/5yr9e) (Exp. 4 in the Detection in Context OSF project) and [Exp. 3](https://osf.io/mfd2w) (Exp. 6 in the Detection in Context OSF project).
 
 To ensure preregistration time-locking (in other words, that preregistration preceded data collection), we employed [randomization-based preregistration](https://medium.com/@mazormatan/cryptographic-preregistration-from-newton-to-fmri-df0968377bb2). We used the SHA256 cryptographic hash function to translate our preregistered protocol folder (including the pre-registration document) to a string of 256 bits. These bits were then combined with the unique identifiers of single subjects, and the resulting string was used as seed for initializing the Mersenne Twister pseudorandom number generator prior to determining all random aspects of the experiment, including the order of trials, occluder positions, and random noise in the stimulus itself. This way, experimental randomization was causally dependent on, and therefore could not have been determined prior to, the specific contents of our preregistration document ([Mazor, Mazor & Mukamel, 2019](https://doi.org/10.1111/ejn.14278)).
 
