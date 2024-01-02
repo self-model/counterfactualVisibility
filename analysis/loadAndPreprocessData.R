@@ -27,6 +27,8 @@ E1.raw_df <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfiles
          present=as.numeric(present),
          resp = response==presence_key) 
 
+E1.export <- read_csv('../experiments/Exp1pixels/version2/data/prolific_export_batch1.csv') 
+
 E2.raw_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all_data.csv') %>%
   filter(frame_index==0)%>%
   mutate(subj_id=PROLIFIC_PID,
@@ -35,13 +37,30 @@ E2.raw_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all
          present=as.numeric(present),
          resp = response==presence_key) 
 
-E3.raw_df <- read_csv('../experiments/Exp3reference/data/jatos_results_files_batch1/all_data.csv') %>%
+E2.export <- read_csv('../experiments/Exp2rows/data/prolific_export_batch1.csv') %>%
+  rbind(read_csv('../experiments/Exp2rows/data/prolific_export_batch2.csv'))%>%
+  rbind(read_csv('../experiments/Exp2rows/data/prolific_export_batch3.csv'))
+
+
+# E3.raw_df <- read_csv('../experiments/Exp3reference/data/jatos_results_files_batch1/all_data.csv') %>%
+#   filter(frame_index==0)%>%
+#   mutate(subj_id=PROLIFIC_PID,
+#          correct = as.numeric(correct),
+#          RT = as.numeric(RT),
+#          present=as.numeric(present),
+#          resp = response==presence_key) 
+
+# Include participants with no file, just results (the server failed before saving pixel data, but their data is still usable)
+E3.raw_df <- read_csv('../experiments/Exp3reference/data/jatos_results_data_batch1.txt') %>%
   # filter(frame_index==0)%>%
   mutate(subj_id=PROLIFIC_PID,
-         correct = as.numeric(correct=='true'),
+         correct = ifelse(correct=='true',1,0),
          RT = as.numeric(RT),
          present=as.numeric(present),
          resp = response==presence_key) 
+
+E3.export <- read_csv('../experiments/Exp3reference/data/prolific_export_batch1.csv') 
+
 
 E2a.raw_df <- read_concat_data('../experiments/Exp2rowsLong/data/jatos_results_data_session1') %>% 
   mutate(session=1) %>%
@@ -63,6 +82,9 @@ E2a.raw_df <- read_concat_data('../experiments/Exp2rowsLong/data/jatos_results_d
   filter(length(unique(session))>3) %>%
   ungroup()
 
+E2a.export <- read_csv('../experiments/Exp2rowsLong/data/prolific_export_batch1.csv') 
+
+
 E3a.raw_df <- read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session1') %>% 
   mutate(session=1) %>%
   rbind(read_concat_data('../experiments/Exp3referenceLong/data/jatos_results_data_session2') %>%
@@ -79,6 +101,9 @@ E3a.raw_df <- read_concat_data('../experiments/Exp3referenceLong/data/jatos_resu
          RT = as.numeric(RT),
          present=as.numeric(present),
          resp = response==presence_key)
+
+E3a.export <- read_csv('../experiments/Exp3referenceLong/data/prolific_export_batch1.csv') 
+
 
 E1.low_accuracy <- E1.raw_df %>%
   filter(test_part=='test1' | test_part=='test2') %>%
