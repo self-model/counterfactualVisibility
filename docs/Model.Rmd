@@ -1,0 +1,231 @@
+---
+title             : "The title"
+shorttitle        : "Title"
+
+author: 
+  - name          : "First Author"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Postal address"
+    email         : "my@email.com"
+    role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+      - "Conceptualization"
+      - "Writing - Original Draft Preparation"
+      - "Writing - Review & Editing"
+  - name          : "Ernst-August Doelle"
+    affiliation   : "1,2"
+    role:
+      - "Writing - Review & Editing"
+      - "Supervision"
+
+affiliation:
+  - id            : "1"
+    institution   : "Wilhelm-Wundt-University"
+  - id            : "2"
+    institution   : "Konstanz Business School"
+
+authornote: |
+  Add complete departmental affiliations for each author here. Each new line herein must be indented, like this line.
+
+  Enter author note here.
+
+abstract: |
+  One or two sentences providing a **basic introduction** to the field,  comprehensible to a scientist in any discipline.
+  
+  Two to three sentences of **more detailed background**, comprehensible  to scientists in related disciplines.
+  
+  One sentence clearly stating the **general problem** being addressed by  this particular study.
+  
+  One sentence summarizing the main result (with the words "**here we show**" or their equivalent).
+  
+  Two or three sentences explaining what the **main result** reveals in direct comparison to what was thought to be the case previously, or how the  main result adds to previous knowledge.
+  
+  One or two sentences to put the results into a more **general context**.
+  
+  Two or three sentences to provide a **broader perspective**, readily comprehensible to a scientist in any discipline.
+  
+  <!-- https://tinyurl.com/ybremelq -->
+  
+keywords          : "keywords"
+wordcount         : "X"
+
+bibliography      : "r-references.bib"
+
+floatsintext      : no
+linenumbers       : yes
+draft             : no
+mask              : no
+
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+
+classoption       : "man"
+output            : papaja::apa6_word
+---
+
+```{r setup, include = FALSE}
+
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'reticulate',
+    'tidyverse',
+    'broom',
+    'estimatr', #for robust regression
+    'cowplot',
+    'MESS', # for AUCs
+    'lsr', # for effect sizes
+    'pwr', # for power calculations
+    'brms', # for mixed effects modeling
+    'BayesFactor',# for Bayesian t test
+    'jsonlite', #parsing data from sort_trial
+    'afex' #for anova
+  ), "2022-12-01"
+)
+r_refs("r-references.bib")
+
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+# Model details
+
+We model participant's decisions and confidence ratings as the output of an evidence accumulation process, where evidence is provided sequentially over time. For simplicity, evidence per time point is modeled as a discrete variable, taking values of 0 or 1 (this can be thought of as resulting from the binary nature of action potentials). We define $p(x_t=1|absent)=\theta_{absent}$ and $p(x_t=1|present)=\theta_{present}$. $\theta_{absent}$ is set to a value close to 0, and $\theta_{present}$ to a slightly higher value, reflecting the low probability of imagining evidence for presence and scarcity of such evidence, respectively. For example, in the below simulations we set $\theta_{absent}:=0.01$ and $\theta{present}:=0.1$. 
+
+Participants' goal is to make correct guesses about the presence of a target. We therefore define the the utility of a correct guess as a function of task accuracy: 
+
+$$
+U(decision)_t=\left\{
+\begin{array}{ll}
+1 &\text{if correct} \\ 
+0 &\text{otherwise}.
+\end{array} 
+\right.
+$$
+At each time point, the agent needs to decide between three actions: sampling more evidence, deciding "present", or deciding "absent". We further assume that participants prefer to make correct decisions now rather than later. This is done by introducing a temporal discount factor $gamma\in[0,1]$:
+
+$$
+U(decision)_{t+1}=\gamma U(decision)_t
+$$
+Given $\gamma$, and participants' subjective beliefs about the likelihood functions $\overline{\theta}_{present}$ and $\overline{\theta}_{absent}$ (we assume that participants know that the probability of target presence is 0.5), an ideal observer can maximize their expected utility by first, following each new sample, extract the log likelihood ratio between presence and absence:
+
+$$
+LLR_t=\sum{}_{i=1}^{t}log\frac{p(x_i|\theta_{presence})}{p(x_i|\theta_{absence})}
+$$
+
+The probability of target presence given the evidence is then:
+
+$$
+p(present|X_t)=\frac{e^{LLR_t}}{1+e^{LLR_t}}
+$$
+And, assuming the participant decides "present" if and only if $p(present|X)>0.5$, the probability of being correct is:
+$$
+p(correct|X_t)=max(p(present|X_t),1-p(present|X_t))
+$$
+the expected utility at time point $t$ equals the probability of being correct, unless the value of additional evidence outweighs the discount factor $\gamma$:
+
+$$ 
+E(U|X_t)=max(p(correct|X_t),\gamma(p(1|X_t)E(U|[X_t,1])+p(0|X_t)E(U|[X_t,0])) 
+$$ 
+
+Where $E(U|[X_t,1])$ is the expected utility at time point $t+1$, assuming the next sample is $1$ (similar for $0$), and $p(1|X_t)$ is the probability that the next sample will be $1$, marginalized over target presence and absence ($p(1|X_t)= p(present|t)\theta_{present}+(1-p(present|t))\theta_{absent}$ and $p(0|X_t)=1-p(1|Xt)$). 
+
+Finally, confidence ratings are modeled as the estimated probability of being correct. This probability is estimated after sampling two additional samples, to account for post-decisional evidence accumulation. 
+
+We simulated 1,000 trials with $\gamma=0.99$, $\bar{\theta}_{absent}=0.01$ and $\bar{\theta}_{present}=0.1$. We used a planning horizon of 100 time points, noting that the optimal policy stabilized with a horizon of 60. 
+
+## Simulation results
+
+```{r load_basic_simulation, echo=FALSE, cache=TRUE}
+sim.basic <- read_csv('../modelling/simulated_data/accum_bernoulli_simple.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+```
+Decision accuracy was `r sim.basic$correct%>%mean()%>%printnum()`, and "target present" responses were given on `r sim.basic$decision%>%mean()%>%printnum()` of all trials. The simulation resulted in the typical signatures of a perceptual detection task. First. response times were shorter for "target present" decisions (mean = `r sim.basic %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.basic %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.basic %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.basic %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). Notably, these behavioural asymmetries in response times and subjective confidence are the result of optimal, Bayesian decision making, with full knowledge about the underlying generative model.
+
+# Occlusion effects
+
+We simulate stimulus occlusion as a scaling of the probability of sampling a 1:
+
+
+$$
+\theta'=\alpha\theta
+$$
+With $\alpha \in [0,1]$. This way of defining occlusion has two notable characteristics. First, the informativeness of obtaining positive evidence, characterized by the log likelihood ratio between target presence and absence following a 1, is unaffected by $\alpha$:
+
+$$
+LLR_{[1]}=log\frac{p(1|present)}{p(1|absent)}=log\frac{\alpha\theta_{present}}{\alpha\theta_{absent}}=log\frac{\theta_{present}}{\theta_{absent}}
+$$
+
+Second, the informativeness of obtaining negative evidence, characterized by the log likelihood ratio between target presence and absence following a 0, diminishes with lower values of $\alpha$:
+
+$$
+LLR_{[0]}=log\frac{p(0|present)}{p(0|absent)}=log\frac{1-\alpha\theta_{present}}{1-\alpha\theta_{absent}}<log\frac{1-\theta_{present}}{1-\theta_{absent}}
+$$
+for any $\alpha<1$. In the following simulation we had two occlusion level, one where $\alpha=1$ (easy condition) and one where $\alpha=0.7$ (hard condition). We simulated 1000 trials in each condition. Participants were assumed to have perfect knowledge of the underlying sample-generating model.
+
+## Simulation results
+
+```{r load_occlusion_simulation, echo=FALSE, cache=TRUE}
+sim.occlusion <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+```
+
+Decision accuracy was `r sim.occlusion%>%filter(occluded_rows==2)%>%pull(correct)%>%mean()%>%printnum()` in the easy condition and `r sim.occlusion%>%filter(occluded_rows==6)%>%pull(correct)%>%mean()%>%printnum()` in the hard condition. "Target present" responses were given on `r sim.occlusion%>%filter(occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()` of the trials in the easy condition and `r sim.occlusion%>%filter(occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()` in the hard condition. As before, the simulation resulted in the typical signatures of a perceptual detection task. First, response times were shorter for "target present" decisions (mean = `r sim.occlusion %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.occlusion %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.occlusion %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.occlusion %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). 
+
+Turning to comparing behaviour in the easy and hard conditions, hit rate was lower in the hard condition (`r sim.occlusion %>%filter(present==1 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==1 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in presence (correct responses only) was lower in the hard condition (`r sim.occlusion %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct target-present responses were slower in the hard condition (`r sim.occlusion %>%filter(present==1 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==1 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+
+Importantly, similar results were obtained in target-absent trials. The false alarm rate was higher in the hard condition (`r sim.occlusion %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was lower in the hard condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct rejection trials were slower in the hard condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+
+# Metacognitive failures
+
+The above pattern is expected if participants have perfect metacognitive knowledge of the underlying sample-generating process. But perfect metacognitive knowledge is rarely, if ever, the case. Humans are more likely to use internal models that are biased and simplified. Below we describe the implications of two such cases. First, a case of underestimating the effect of occlusion on target visibility, and second, a case of overestimating this effect. We show that these two failures result in an inversion of the effect of stimulus occlusion on target-absent response-times. 
+
+
+## Subclass 1: no insight into occlusion effects
+
+The sample-generating model in the below simulation is the same as in the previous one, but participants' internal beliefs about this model are biased. Specifically, participants' internal representation of $\gamma$ is $1$ instead of $0.7$, resulting in them underestimating the effect of occlusion on stimulus visibility. 
+
+```{r load_occlusion_faulty_mc_simulation, echo=FALSE, cache=TRUE}
+sim.occlusion_fmc <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_fault1.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+```
+
+Decision accuracy was `r sim.occlusion_fmc%>%filter(occluded_rows==2)%>%pull(correct)%>%mean()%>%printnum()` in the easy condition and `r sim.occlusion_fmc%>%filter(occluded_rows==6)%>%pull(correct)%>%mean()%>%printnum()` in the hard condition. "Target present" responses were given on `r sim.occlusion_fmc%>%filter(occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()` of the trials in the easy condition and `r sim.occlusion_fmc%>%filter(occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()` in the hard condition. As before, the simulation resulted in the typical signatures of a perceptual detection task. First, response times were shorter for "target present" decisions (mean = `r sim.occlusion_fmc %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.occlusion_fmc %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.occlusion_fmc %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.occlusion_fmc %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). 
+
+Turning to comparing behaviour in the easy and hard conditions, hit rate was lower in the hard condition (`r sim.occlusion_fmc %>%filter(present==1 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==1 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in presence (correct responses only) was lower in the hard condition (`r sim.occlusion_fmc %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct target-present responses were slower in the hard condition (`r sim.occlusion_fmc %>%filter(present==1 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==1 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+
+Importantly, similar results were obtained in target-absent trials. The false alarm rate was higher in the hard condition (`r sim.occlusion_fmc %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was lower in the hard condition (`r sim.occlusion_fmc %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct rejection trials were slower in the hard condition (`r sim.occlusion_fmc %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_fmc %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+
+## Subclass 1: exaggerated beliefs about occlusion effects
+
+
+# Methods
+We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. <!-- 21-word solution (Simmons, Nelson & Simonsohn, 2012; retrieved from http://ssrn.com/abstract=2160588) -->
+
+## Participants
+
+## Material
+
+## Procedure
+
+## Data analysis
+We used `r cite_r("r-references.bib")` for all our analyses.
+
+
+# Results
+
+# Discussion
+
+
+\newpage
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
