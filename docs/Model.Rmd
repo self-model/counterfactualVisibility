@@ -70,7 +70,8 @@ library('groundhog')
 groundhog.library(
   c(
     'papaja',
-    'tidyverse'
+    'tidyverse',
+    'ggplot2'
   ), "2022-12-01"
 )
 r_refs("r-references.bib")
@@ -80,14 +81,15 @@ r_refs("r-references.bib")
 ```{r analysis-preferences}
 # Seed for random number generation
 set.seed(42)
-knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+knitr::opts_chunk$set(echo=FALSE, include = FALSE, warning=FALSE, message=FALSE)
+
 ```
 
 # Model details
 
-We model participant's decisions and confidence ratings as the output of an evidence accumulation process, where evidence is provided sequentially over time. For simplicity, evidence per time point is modeled as a discrete variable, taking values of 0 or 1 (this can be thought of as resulting from the binary nature of action potentials). We define $p(x_t=1|absent)=\theta_{absent}$ and $p(x_t=1|present)=\theta_{present}$. $\theta_{absent}$ is set to a value close to 0, and $\theta_{present}$ to a slightly higher value, reflecting the low probability of imagining evidence for presence and scarcity of such evidence, respectively. For example, in the below simulations we set $\theta_{absent}:=0.01$ and $\theta{present}:=0.1$. 
+We model participant's decisions and confidence ratings as the output of an evidence accumulation process, where evidence is provided sequentially over time. For simplicity, evidence per time point is modeled as a discrete variable, taking values of 0 or 1 (this can be thought of as resulting from the all-or-nothing nature of action potentials). We define $p(x_t=1|absent)=\theta_{absent}$ and $p(x_t=1|present)=\theta_{present}$. $\theta_{absent}$ is set to a value close to 0, and $\theta_{present}$ to a slightly higher value, reflecting the low probability of imagining evidence for presence and scarcity of such evidence, respectively. For example, in the below simulations we set $\theta_{absent}:=0.05$ and $\theta{present}:=0.2$. 
 
-Participants' goal is to make correct guesses about the presence of a target. We therefore define the the utility of a correct guess as a function of task accuracy: 
+Participants' goal is to make correct guesses about the presence of a target. We therefore define the utility of a decision to be a function of its accuracy: 
 
 $$
 U(decision)_t=\left\{
@@ -97,18 +99,29 @@ U(decision)_t=\left\{
 \end{array} 
 \right.
 $$
-At each time point, the agent needs to decide between three actions: sampling more evidence, deciding "present", or deciding "absent". We further assume that participants prefer to make correct decisions now rather than later. This is done by introducing a temporal discount factor $gamma\in[0,1]$:
+At each time point, the agent needs to decide between three actions: sampling more evidence, deciding "present", or deciding "absent". We further assume that participants prefer to make correct decisions now rather than later. This is done by introducing a temporal discount factor $\gamma\in[0,1]$:
 
 $$
 U(decision)_{t+1}=\gamma U(decision)_t
 $$
-Given $\gamma$, and participants' subjective beliefs about the likelihood functions $\overline{\theta}_{present}$ and $\overline{\theta}_{absent}$ (we assume that participants know that the probability of target presence is 0.5), an ideal observer can maximize their expected utility by first, following each new sample, extract the log likelihood ratio between presence and absence:
+Given $\gamma$, participants' subjective beliefs about the likelihood functions $\overline{\theta}_{present}$ and $\overline{\theta}_{absent}$ (we assume here that they have accurate metacognitive representations of these parameters), and the accurate belief that the probability of target presence is 0.5, an ideal observer can maximize their expected utility by first, following each new sample, extract the log likelihood ratio between presence and absence:
 
 $$
-LLR_t=\sum{}_{i=1}^{t}log\frac{p(x_i|\theta_{presence})}{p(x_i|\theta_{absence})}
+LLR_t=\sum{}_{i=1}^{t}log\frac{p(x_i|\bar\theta_{presence})}{p(x_i|\bar\theta_{absence})}
 $$
 
-The probability of target presence given the evidence is then:
+Where
+
+$$
+p(x_i|\bar\theta)=\left\{
+\begin{array}{ll}
+\bar\theta &\text{if }x_i=1 \\ 
+1-\bar\theta &\text{if }x_i=0
+\end{array} 
+\right.
+$$
+
+The probability that a target is present given the evidence is then:
 
 $$
 p(present|X_t)=\frac{e^{LLR_t}}{1+e^{LLR_t}}
@@ -125,38 +138,27 @@ $$
 
 Where $E(U|[X_t,1])$ is the expected utility at time point $t+1$, assuming the next sample is $1$ (similar for $0$), and $p(1|X_t)$ is the probability that the next sample will be $1$, marginalized over target presence and absence ($p(1|X_t)= p(present|t)\theta_{present}+(1-p(present|t))\theta_{absent}$ and $p(0|X_t)=1-p(1|Xt)$). 
 
-Finally, confidence ratings are modeled as the estimated probability of being correct. This probability is estimated after sampling two additional samples, to account for post-decisional evidence accumulation. 
+Finally, confidence ratings are modeled as the estimated probability of being correct when committing to a decision. 
 
-We simulated 1,000 trials with $\gamma=0.99$, $\bar{\theta}_{absent}=0.01$ and $\bar{\theta}_{present}=0.1$. We used a planning horizon of 100 time points, noting that the optimal policy stabilized with a horizon of 60. 
+## occlusion effects
 
-## Simulation results
+We simulate stimulus occlusion as a scaling of $\theta$ by a scaling parameter $\alpha \in [0,1]$. Similar to $\theta_{present}$ and $\theta_{absent}$, $\alpha$ is paralleled by a metacognitive variable, $\bar\alpha$, which corresponds to participants' beliefs about the the effects of occlusion on stimulus visibility. This way of defining occlusion has three notable characteristics. First, the relative effect of occlusion on the probability of obtaining positive evidence ($\alpha$) is much more pronounced than its positive effect on the probability of obtaining negative evidence ($\frac{1-\alpha\theta}{1-\theta}$), because the probability of obtaining positive evidence ($\theta$) is always lower than 0.5. For example, for the case of $\theta=0.1$ and $\alpha=0.7$, occluding more of the display reduces the availability of positive evidence by a factor of `r printnum(1/0.7)`, but increases the availability of negative evidence by a factor of `r printnum((1-0.1*0.7)/(1-0.1))` only.
 
-```{r load_basic_simulation, echo=FALSE, cache=TRUE}
-sim.basic <- read_csv('../modelling/simulated_data/accum_bernoulli_simple.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
-```
-Decision accuracy was `r sim.basic$correct%>%mean()%>%printnum()`, and "target present" responses were given on `r sim.basic$decision%>%mean()%>%printnum()` of all trials. The simulation resulted in the typical signatures of a perceptual detection task. First. response times were shorter for "target present" decisions (mean = `r sim.basic %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.basic %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.basic %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.basic %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). Notably, these behavioural asymmetries in response times and subjective confidence are the result of optimal, Bayesian decision making, with full knowledge about the underlying generative model.
 
-# Occlusion effects
-
-We simulate stimulus occlusion as a scaling of the probability of sampling a 1:
-
+Second, the informativeness of obtaining positive evidence, quantified as the log likelihood ratio between target presence and absence following a 1, is unaffected by beliefs about the effects of occlusion on visibility, $\bar\alpha$:
 
 $$
-\theta'=\alpha\theta
-$$
-With $\alpha \in [0,1]$. This way of defining occlusion has two notable characteristics. First, the informativeness of obtaining positive evidence, characterized by the log likelihood ratio between target presence and absence following a 1, is unaffected by $\alpha$:
-
-$$
-LLR_{[1]}=log\frac{p(1|present)}{p(1|absent)}=log\frac{\alpha\theta_{present}}{\alpha\theta_{absent}}=log\frac{\theta_{present}}{\theta_{absent}}
+LLR_{[1]}=log\frac{p(1|present)}{p(1|absent)}=log\frac{\bar\alpha\bar{\theta}_{present}}{\bar\alpha\bar{\theta}_{absent}}=log\frac{\bar\theta_{present}}{\bar\theta_{absent}}
 $$
 
-Second, the informativeness of obtaining negative evidence, characterized by the log likelihood ratio between target presence and absence following a 0, diminishes with lower values of $\alpha$:
+And third, the informativeness of obtaining negative evidence, quantified as the log likelihood ratio between target presence and absence following a 0, diminishes with lower values of $\bar\alpha$:
 
 $$
-LLR_{[0]}=log\frac{p(0|present)}{p(0|absent)}=log\frac{1-\alpha\theta_{present}}{1-\alpha\theta_{absent}}<log\frac{1-\theta_{present}}{1-\theta_{absent}}
+LLR_{[0]}=log\frac{p(0|present)}{p(0|absent)}=log\frac{1-\bar\alpha\bar\theta_{present}}{1-\bar\alpha\bar\theta_{absent}}<log\frac{1-\bar\theta_{present}}{1-\bar\theta_{absent}}
 $$
-for any $\alpha<1$. In the following simulation we had two occlusion level, one where $\alpha=1$ (easy condition) and one where $\alpha=0.7$ (hard condition). We simulated 1000 trials in each condition. Participants were assumed to have perfect knowledge of the underlying sample-generating model.
+
+
+Together, we get a double dissociation. Occlusion affects the probability of obtaining positive evidence, but beliefs about occlusion have no effect on the interpretation of such evidence once obtained. On the other hand, occlusion has little effect on the probability of obtaining negative evidence, but beliefs about the effects of occlusion do. In the following simulation we had two occlusion levels one where $\alpha=1$ (easy condition) and one where $\alpha=0.7$ (hard condition). We simulated 1000 trials in each condition. Participants were assumed to have perfect knowledge of the underlying sample-generating model.
 
 ## Simulation results
 
@@ -171,41 +173,178 @@ Turning to comparing behaviour in the easy and hard conditions, hit rate was low
 
 Importantly, similar results were obtained in target-absent trials. The false alarm rate was higher in the hard condition (`r sim.occlusion %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was lower in the hard condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct rejection trials were slower in the hard condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
 
-# Metacognitive failures
+# Simulating a metacognitive failure
 
-The above pattern is expected if participants have perfect metacognitive knowledge of the underlying sample-generating process. But perfect metacognitive knowledge is rarely, if ever, the case. Humans are more likely to use internal models that are biased and simplified. Below we describe the implications of two such cases. First, a case of underestimating the effect of occlusion on target visibility, and second, a case of overestimating this effect. We show that these two failures result in an inversion of the effect of stimulus occlusion on target-absent response-times. 
+The above pattern is expected if participants have perfect metacognitive knowledge of the underlying sample-generating process. In the following, we simulate the behaviour of an agent who ignores the effect of occlusion on target visibility in their interpretation of evidence. 
 
-
-## Subclass 1: no insight into occlusion effects
-
-The sample-generating model in the below simulation is the same as in the previous one, but participants' internal beliefs about this model are biased. Specifically, participants' internal representation of $\gamma$ is $1$ instead of $0.7$, resulting in them underestimating the effect of occlusion on stimulus visibility. 
+The sample-generating model in the below simulation is the same as in the previous one ($\theta_{present}=0.20$, $\theta_{absent}=0.05$, $\alpha_{hard}=0.7$, $\alpha_{easy}=1$)). However, participants' internal representation of $\alpha$, $\bar\alpha$, is $0.85$ for both conditions, resulting in them ignoring the effect of occlusion on stimulus visibility. 
 
 ```{r load_occlusion_fault1_simulation, echo=FALSE, cache=TRUE}
 sim.occlusion_f1 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_fault1.csv') %>%
   mutate(correct = ifelse(decision==present,1,0))
 ```
-
 Decision accuracy was `r sim.occlusion_f1%>%filter(occluded_rows==2)%>%pull(correct)%>%mean()%>%printnum()` in the easy condition and `r sim.occlusion_f1%>%filter(occluded_rows==6)%>%pull(correct)%>%mean()%>%printnum()` in the hard condition. "Target present" responses were given on `r sim.occlusion_f1%>%filter(occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()` of the trials in the easy condition and `r sim.occlusion_f1%>%filter(occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()` in the hard condition. As before, the simulation resulted in the typical signatures of a perceptual detection task. First, response times were shorter for "target present" decisions (mean = `r sim.occlusion_f1 %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.occlusion_f1 %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.occlusion_f1 %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.occlusion_f1 %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). 
 
-Turning to comparing behaviour in the easy and hard conditions, hit rate was lower in the hard condition (`r sim.occlusion_f1 %>%filter(present==1 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==1 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in presence (correct responses only) was slightly lower in the hard condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct target-present responses were slower in the hard condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+Turning to comparing behaviour in the easy and hard conditions, hit rate was lower in the hard condition (`r sim.occlusion_f1 %>%filter(present==1 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==1 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in presence (correct responses only) was slightly but reliably affected by occlusion (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum(digits=3)` versus  `r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum(digits=3)`; `r apa_print(t.test(sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence),sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)))$statistic`). Finally, response times in correct target-present responses were slower in the hard condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
 
-However, patterns in decisions about target absence were now reversed. The false alarm rate was *lower* in the hard condition (`r sim.occlusion_f1 %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was slightly *higher* in the hard condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`; `r apa_print(t.test(sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence),sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)))$statistic`). Finally, response times in correct rejection trials were slower in the hard condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+However, patterns in decisions about target absence were now reversed. The false alarm rate was *lower* in the hard condition (`r sim.occlusion_f1 %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was unaffected by occlusion (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum(digits=3)` versus  `r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum(digits=3)`; `r apa_print(t.test(sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence),sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)))$statistic`). Finally, and most importantly, response times in correct rejection trials were now *faster* in the hard condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f1 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
 
-## Subclass 2: exaggerated beliefs about occlusion effects
+## Testing the model's predictions
 
-```{r load_occlusion_fault2_simulation, echo=FALSE, cache=TRUE}
-sim.occlusion_f2 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_fault2.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
+The above model accounts for individual differences in the effects of occlusion on target-absent response times as resulting from different approaches to the incorporation of beliefs about counterfactual visibility into the interpretation of negative evidence. According to this model, participants who were slower to infer absence when more of the display was occluded did so because they considered the effect of occlusion on visibility when interpreting negative evidence, and participants who were faster to infer absence when more of the display was occluded did so because they did not. Our simulations make two additional predictions about this second group. First, unlike the first group, they should make fewer false alarms when more of the display is occluded. And second, relative to the first group, their confidence should be less affected by the occlusion manipulation in both target-present and target-absent trials. 
+
+```{r load-and-process, echo=FALSE, cache=TRUE}
+source("../analysis/loadAndPreprocessData.R")
 ```
 
-Decision accuracy was `r sim.occlusion_f2%>%filter(occluded_rows==2)%>%pull(correct)%>%mean()%>%printnum()` in the easy condition and `r sim.occlusion_f2%>%filter(occluded_rows==6)%>%pull(correct)%>%mean()%>%printnum()` in the hard condition. "Target present" responses were given on `r sim.occlusion_f2%>%filter(occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()` of the trials in the easy condition and `r sim.occlusion_f2%>%filter(occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()` in the hard condition. As before, the simulation resulted in the typical signatures of a perceptual detection task. First, response times were shorter for "target present" decisions (mean = `r sim.occlusion_f2 %>%filter(decision==1)%>%pull(RT)%>%mean()%>%printnum()` time points until decision) than for "target absent" decisions (mean = `r sim.occlusion_f2 %>%filter(decision==0)%>%pull(RT)%>%mean()%>%printnum()`). Second, subjective confidence was higher in decisions about presence (mean = `r sim.occlusion_f2 %>%filter(decision==1)%>%pull(confidence)%>%mean()%>%printnum()`) than in decisions about absence (mean = `r sim.occlusion_f2 %>%filter(decision==0)%>%pull(confidence)%>%mean()%>%printnum()`). 
+```{r create matrices, echo=FALSE, cache=TRUE}
 
-Turning to comparing behaviour in the easy and hard conditions, hit rate was lower in the hard condition (`r sim.occlusion_f2 %>%filter(present==1 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==1 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in presence (correct responses only) was slightly lower in the hard condition (`r sim.occlusion_f2 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`). Finally, response times in correct target-present responses were slower in the hard condition (`r sim.occlusion_f2 %>%filter(present==1 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==1 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+E1.correlation_matrix <- E1.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion==0.15],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.05],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion==0.15],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.05],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion==0.15],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.05],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion==0.15],na.rm=T)-
+              mean(correct[present & hide_proportion==0.05],na.rm=T))%>%
+  dplyr::select(-subj_id) %>%
+  drop_na()
 
-However, patterns in decisions about target absence were now reversed. The false alarm rate was *lower* in the hard condition (`r sim.occlusion_f2 %>%filter(present==0 & occluded_rows==6)%>%pull(decision)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==0 & occluded_rows==2)%>%pull(decision)%>%mean()%>%printnum()`). Confidence in absence (correct responses only) was slightly *higher* in the hard condition (`r sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence)%>%mean()%>%printnum()`; `r apa_print(t.test(sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(confidence),sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(confidence)))$statistic`). Finally, response times in correct rejection trials were slower in the hard condition (`r sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==6)%>%pull(RT)%>%mean()%>%printnum()`) than in the easy condition (`r sim.occlusion_f2 %>%filter(present==0 & correct & occluded_rows==2)%>%pull(RT)%>%mean()%>%printnum()`).
+E2.correlation_matrix <- E2.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.10],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion>0.30],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion>0.30],na.rm=T)-
+              mean(correct[present & hide_proportion==0.10],na.rm=T),
+            confidenceOcclusionEffectAbsence = mean(confidence[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              mean(confidence[correct & !resp & hide_proportion==0.10],na.rm=T),
+            confidenceOcclusionEffectPresence = mean(confidence[correct & resp & hide_proportion>0.30],na.rm=T)-
+              mean(confidence[correct & resp & hide_proportion==0.10],na.rm=T))%>%
+  dplyr::select(-subj_id) %>%
+  drop_na()
 
-# Methods
-We report how we determined our sample size, all data exclusions (if any), all manipulations, and all measures in the study. <!-- 21-word solution (Simmons, Nelson & Simonsohn, 2012; retrieved from http://ssrn.com/abstract=2160588) -->
+E3.correlation_matrix <- E3.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.10],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion>0.30],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion>0.30],na.rm=T)-
+              mean(correct[present & hide_proportion==0.10],na.rm=T))%>%
+  dplyr::select(-subj_id) %>%
+  drop_na()
+
+E2a.correlation_matrix <- E2a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.10],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion>0.30],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion>0.30],na.rm=T)-
+              mean(correct[present & hide_proportion==0.10],na.rm=T))%>%
+  dplyr::select(-subj_id) %>%
+  drop_na()
+
+
+E3a.correlation_matrix <- E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.10],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion>0.30],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion>0.30],na.rm=T)-
+              mean(correct[present & hide_proportion==0.10],na.rm=T))%>%
+  dplyr::select(-subj_id) %>%
+  drop_na()%>%
+  cor(method='spearman')
+
+longExps.correlation_matrix <- E2a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000)%>%
+  dplyr::select(subj_id,RT,correct,resp,hide_proportion,present)%>%
+  mutate(exp=2)%>%
+  rbind(E3a.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000)%>%
+  dplyr::select(subj_id,RT,correct,resp,hide_proportion,present) %>%
+    mutate(exp=3)) %>%
+  group_by(exp,subj_id) %>%
+  summarise(medianRT=median(RT),
+            RTocclusionEffectAbsence = median(RT[correct & !resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & !resp & hide_proportion==0.10],na.rm=T),
+            RTocclusionEffectPresence = median(RT[correct & resp & hide_proportion>0.30],na.rm=T)-
+              median(RT[correct & resp & hide_proportion==0.10],na.rm=T),
+            missDiff = median(RT[!correct & !resp],na.rm=T)-median(RT[correct & resp],na.rm=T),
+            AccocclusionEffectAbsence = -mean(correct[!present & hide_proportion>0.30],na.rm=T)+
+              mean(correct[!present & hide_proportion==0.10],na.rm=T),
+            AccocclusionEffectPresence = mean(correct[present & hide_proportion>0.30],na.rm=T)-
+              mean(correct[present & hide_proportion==0.10],na.rm=T)) %>%
+  dplyr::select(-subj_id) %>%
+  drop_na()
+```
+```{r t-tests, echo=FALSE, cache=TRUE}
+
+#significant target-absent RT effects
+longExps.significant_subjects <- E2a.df %>%
+    filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+    filter(present==0 & correct==1) %>%
+    dplyr::select(subj_id,hide_proportion,RT) %>% 
+  mutate(exp=2) %>%
+  rbind(E3a.df %>%
+    filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+    filter(present==0 & correct==1) %>%
+    dplyr::select(subj_id,hide_proportion,RT) %>% 
+    mutate(exp=3)) %>%
+    group_by(exp,subj_id) %>%
+    summarise(t=t.test(RT[hide_proportion==0.1], RT[hide_proportion==0.35])$statistic,
+              p = t.test(RT[hide_proportion==0.1], RT[hide_proportion==0.35])$p.value) %>%
+  filter(p<0.05) %>%
+  mutate(effect_sign = ifelse(t<0, 'neg','pos'))
+
+#false alarm effects
+
+longExps.FA_effects <- E2a.df %>%
+    filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+    dplyr::select(subj_id,hide_proportion,present,resp,RT) %>% 
+  mutate(exp=2) %>%
+  rbind(E3a.df %>%
+    filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+    dplyr::select(subj_id,hide_proportion,present,resp,RT) %>% 
+    mutate(exp=3)) %>%
+  filter(subj_id %in% longExps.significant_subjects $subj_id) %>%
+  filter(present==0) %>%
+  group_by(exp, subj_id) %>%
+    summarise(fa_diff =mean(resp[hide_proportion==0.1])-mean(resp[hide_proportion==0.35]),
+              fa_p = fisher.test(matrix(c(sum(resp[hide_proportion==0.1]), length(resp[hide_proportion==0.1]) - sum(resp[hide_proportion==0.1]), sum(resp[hide_proportion==0.35]), length(resp[hide_proportion==0.35]) - sum(resp[hide_proportion==0.35])), nrow = 2))$p.value) %>% 
+  merge(longExps.significant_subjects) %>%
+  filter(fa_p<0.05)
+
+```
+
+The distribution of target-absent effects in the long versions of Exp. 2 and 3 reveals that instead of two distinct populations, single participants fall on a gradient. Some participants reliably slow down with more occlusion, others speed up, and the majority fall somewhere in between, with many subjects not showing any effect at all. According to the proposed model, this gradient reflects the degree to which participants incorporate beliefs about the effects of occlusion on visibility into their interpretation of negative evidence. 
+
+Given that the long versions of Exp. 2 and 3 have only 10 participants in each, we pooled all 20 participants from the two long experiments before quantifying the correlation between the effect of occlusion on the false alarm rate and on target-absent response times. As predicted by the model we find a reliable correlation, such that participants who made faster "target absent" responses when more of the display was occluded also tended to make more false alarms with more occlusion (`r apa_print(cor.test(longExps.correlation_matrix$RTocclusionEffectAbsence,longExps.correlation_matrix$AccocclusionEffectAbsence))$full_result`). Despite the low number of trials per participant, a similar correlation emerged in Exp. 3 (`r apa_print(cor.test(E3.correlation_matrix$RTocclusionEffectAbsence,E3.correlation_matrix$AccocclusionEffectAbsence))$full_result`), but not in Experiments 1 and 2 (`r  apa_print(cor.test(E1.correlation_matrix$RTocclusionEffectAbsence,E1.correlation_matrix$AccocclusionEffectAbsence))$estimate`; `r  apa_print(cor.test(E2.correlation_matrix$RTocclusionEffectAbsence,E2.correlation_matrix$AccocclusionEffectAbsence))$estimate`). 
+
+Using confidence ratings from Exp. 2 to test the second prediction, we find the expected correlations. The effect of occlusion on target-absent response times negatively correlated with its effect on confidence in absence (`r apa_print(cor.test(E2.correlation_matrix$confidenceOcclusionEffectAbsence,E2.correlation_matrix$RTocclusionEffectAbsence))$full_result`), and the effect of occlusion on target-present response times negatively correlated with its effect on confidence in presence (`r apa_print(cor.test(E2.correlation_matrix$confidenceOcclusionEffectPresence,E2.correlation_matrix$RTocclusionEffectPresence))$full_result`).
 
 ## Participants
 
