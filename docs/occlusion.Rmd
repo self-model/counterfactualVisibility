@@ -27,7 +27,7 @@ affiliation:
 
 abstract: |
 
-  Perceptual decisions are based not only on incoming sensory input, but also on our beliefs regarding the likelihood of input given competing hypotheses about the world. This role of probabilistic reasoning in perception is especially pertinent when deciding that a stimulus is absent. In decisions about absence, sensory input is mostly missing and decisions are based not on the visibility of a presented stimulus, but on counterfactual visibility: the degree to which a stimulus would have been visible if present. To test the effects of beliefs about counterfactual visibility on perceptual decisions, we had participants perform a near-threshold detection task under different levels of partial stimulus occlusion, thereby visibly manipulating the likelihood function going from external world states to internal perceptual states. More visible stimuli made participatns more accurate, speedy, and confident in their responses. Mirroring these effects, when absent stimuli would have been more visible, if present, participants were also more accurate and confident in their decisions about absence, and showed reliable, yet variable, effects on their decision times. Together, our results are most consistent with the incorporation of counterfactual visibility into perceptual decisions about absence, with implications for the inferential nature of visual perception more broadly. 
+  Perceptual decisions are based not only on incoming sensory input, but also on our beliefs regarding the likelihood of input given competing hypotheses about the world. This role of probabilistic reasoning in perception is especially pertinent when deciding that a stimulus is absent. In decisions about absence, sensory input is mostly missing and decisions are based not on the visibility of a presented stimulus, but on counterfactual visibility: the degree to which a stimulus would have been visible if present. To test the effects of beliefs about counterfactual visibility on perceptual decisions, we had participants perform a near-threshold detection task under different levels of partial stimulus occlusion, thereby visibly manipulating the likelihood function going from external world states to internal perceptual states. More visible stimuli made participatns more accurate, speedy, and confident in their responses. Mirroring these effects, when absent stimuli would have been more visible, if present, participants were also more accurate and confident in their decisions about absence, and showed reliable, yet variable, effects on their decision times. Variability in the effect of occlusion on decisions about absence was captured by an ideal observer model, with varying degrees of metacognitive insight into the efffect of occlusion on visibility. Together, our results are most consistent with the incorporation of counterfactual visibility into perceptual decisions about absence, with implications for the inferential nature of visual perception more broadly. 
   
   <!-- https://tinyurl.com/ybremelq -->
   
@@ -82,7 +82,8 @@ groundhog.library(
     'brms', # for mixed effects modeling
     'BayesFactor',# for Bayesian t test
     'jsonlite', #parsing data from sort_trial
-    'afex' #for anova
+    'afex', #for anova
+    'pracma' # for AUCs
   ), "2022-12-01"
 )
 
@@ -315,7 +316,7 @@ E3.RT_by_occlusion_in_presence_correct_only <- E3.df %>%
   mutate(diff=hide_proportion0.1-hide_proportion0.35);
 ```
 
-Mean accuracy in the main experiment was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`). Consistent with the response time profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], response times were significantly shorter in decisions about presence compared to absence (pre-registered Hypothesis 1: `r printnum(E1.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E1.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). This is expected if decisions about absence are reached only when the agent can be confident that presence would have been detected [@mazor2021stage].
+Mean accuracy in the main experiment was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`). Consistent with the response time profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], response times were significantly shorter in "target present" compared to "target absent" responses (pre-registered Hypothesis 1: `r printnum(E1.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E1.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). This is expected if decisions about absence are reached only when the agent can be confident that presence would have been detected [@mazor2021stage].
 
 As a first measure of the effects of stimulus occlusion on target detection, we examined the difference in hit rate: the probability of correctly reporting stimulus presence when a stimulus is present. As expected, hit rate was reduced by occlusion (`r apa_print(E1.hit_rate_by_occlusion$diff%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)C, blue lines), with a mean hit rate of `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%sd())`) when 5% of the pixels were occluded, versus `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%sd())`) when 15% of the pixels were occluded. Unsurprisingly, occluding more of the target made it more difficult to spot.
 
@@ -504,7 +505,103 @@ E2.confidence_by_occlusion_and_response_correct_only <- merge(
   mutate(interaction = diffpresence-diffabsence);
 ```
 
-Finally, in order to measure metacognitive insight into the effects of occlusion on perception, participants reported their subjective level of confidence in their perceptual decisions in blocks 3 and 4 of the task. Consistent with the confidence profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], confidence was higher in decisions about presence compared to absence (pre-registered hypothesis 7: `r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$statistic`). As expected, confidence in presence was lower when more of the display was occluded (pre-registered hypothesis 8: `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean())` on a 0-1 scale; `r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$statistic`). Critically, the same was true of confidence in absence (pre-registered hypothesis 9: `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean())`; `r apa_print(E2.confidence_by_occlusion_in_absence_correct_only$diff%>%t.test())$statistic`), with no significant interaction between occlusion and target presence on confidence (pre-registered hypothesis 10: `r apa_print(E2.confidence_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)D). Together, unlike reaction times, which were solely affected by visibility, subjective confidence ratings were affected by both visibility and counterfactual visibility: the expected sensory input, had a target been present.
+```{metacognitive asymmetry}
+
+E2.unfiltered_df <- E2.df %>%
+  filter(!is.na(confidence))%>%
+  group_by(subj_id) %>%
+    mutate(
+      conf_discrete = ntile(confidence,20) %>%
+        factor(levels=1:21),
+      correct = factor(correct, levels=c(0,1)),
+      conf_bi = ifelse(
+        resp==1, 
+        as.numeric(confidence),
+        -1*as.numeric(confidence)),
+      )
+
+E2.not_enough_errors <- E2.unfiltered_df %>%
+  group_by(subj_id, resp, correct,.drop=FALSE) %>%
+  tally() %>%
+  group_by(subj_id) %>%
+  summarise(enough_errors=min(n)>1) %>%
+  filter(!enough_errors)%>%
+  pull(subj_id)
+  
+E2.no_variance <- E2.unfiltered_df %>%
+  group_by(subj_id, resp) %>%
+  summarise(varconf=var(confidence))%>%
+  group_by(subj_id)%>%
+  summarise(no_var=min(varconf)==0)%>%
+  filter(no_var)%>%
+  pull(subj_id)
+
+E2.df <- E2.unfiltered_df %>%
+  group_by(subj_id) %>%
+  filter(mean(as.numeric(correct))>0.6)%>%
+  filter(!(subj_id %in% not_enough_errors) &
+           !(subj_id %in% no_variance))
+
+  
+E2.disc_subj_stats <- E2.df %>%
+    group_by(subj_id) %>%
+    summarise(
+      bias = mean(ifelse(resp==1,1,0)),
+      acc = mean(ifelse(correct==1,1,0)),
+      hit_rate = sum(correct==1 & present==1)/sum(present==1),
+      false_alarm_rate=sum(correct==0 & present==0)/sum(present==0),
+      dprime=qnorm(hit_rate)-qnorm(false_alarm_rate),
+      criterion=-0.5*(qnorm(hit_rate)+qnorm(false_alarm_rate)),
+      conf=mean(confidence),
+      n1 = sum(present==1),
+      n2 = sum(present==0))
+
+
+E2.raw_conf_counts <- E2.df %>%
+  mutate(subj_id=factor(subj_id)) %>%
+  group_by(subj_id, resp, correct, confidence, .drop=FALSE) %>%
+  tally() %>%
+  spread(correct, n, sep='', fill=0) %>%
+  arrange(desc(confidence), by_group=TRUE) %>%  
+  group_by(subj_id, resp)%>%
+  mutate(cs_correct=cumsum(correct1)/sum(correct1),
+         cs_incorrect=cumsum(correct0)/sum(correct0))
+  
+E2.conf_counts <- E2.raw_conf_counts %>%
+  group_by(subj_id, resp,.drop=TRUE) %>%
+  reframe(
+    cs_correct=c(0,1),
+    cs_incorrect=c(0,1)) %>%
+  bind_rows(E2.conf_counts,.) %>% ## add type-2 ROC edges
+  group_by(subj_id, resp, cs_incorrect) %>%
+  summarise(cs_correct=max(cs_correct)) %>% 
+  merge(disc_subj_stats%>%dplyr::select(subj_id,dprime, hit_rate, false_alarm_rate))%>%
+  mutate(miss_rate=1-hit_rate,
+         cr_rate=1-false_alarm_rate,
+         cs_correct_from_sdt= ifelse(resp==1,
+           pnorm(qnorm(false_alarm_rate*cs_incorrect), mean=-dprime)/hit_rate,
+           pnorm(qnorm(miss_rate*cs_incorrect), mean=-dprime)/cr_rate));
+
+E2.AUC <- E2.conf_counts %>%
+    group_by(subj_id, resp,.drop=TRUE) %>%
+    summarise(AUC = trapz(cs_incorrect, cs_correct)) %>%
+    spread(resp, AUC, sep='')%>%
+    mutate(metacognitive_asymmetry=(respTRUE-respFALSE),
+           average_AUC=respTRUE/2+respFALSE/2)
+  
+E2.sdtAUC <- E2.conf_counts %>%
+    group_by(subj_id, resp,.drop=TRUE) %>%
+    filter(sum(!is.na(cs_correct_from_sdt))>2)%>%
+    summarise(AUC = trapz(cs_incorrect, cs_correct_from_sdt)) %>%
+    spread(resp, AUC, sep='')%>%
+    mutate(metacognitive_asymmetry_from_sdt=(respTRUE-respFALSE))
+
+E2.AUC_control <- E2.AUC %>%
+    merge(E2.sdtAUC%>%dplyr::select(subj_id,metacognitive_asymmetry_from_sdt)) %>%
+            mutate(metacognitive_asymmetry_control = metacognitive_asymmetry-metacognitive_asymmetry_from_sdt)
+```
+
+Finally, in order to measure metacognitive insight into the effects of occlusion on perception, participants reported their subjective level of confidence in their perceptual decisions in blocks 3 and 4 of the task. Consistent with the confidence profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], confidence was higher in decisions about presence compared to absence (pre-registered hypothesis 7: `r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$statistic`). As expected, confidence in presence was lower when more of the display was occluded (pre-registered hypothesis 8: `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean())` on a 0-1 scale; `r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$statistic`). Critically, the same was true of confidence in absence (pre-registered hypothesis 9: `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean())`; `r apa_print(E2.confidence_by_occlusion_in_absence_correct_only$diff%>%t.test())$statistic`), with no significant interaction between occlusion and target presence on confidence (pre-registered hypothesis 10: `r apa_print(E2.confidence_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)D). Together, unlike reaction times, which were solely affected by visibility, subjective confidence ratings were affected by both visibility and beliefs about the effects of occlusion on visibility: participants were less confident in the absence of a target when it would have been harder to see.
 
 ## Experiment 3: providing visual access to the counterfactual
 
@@ -520,7 +617,7 @@ As in Exp. 1, signal detection sensitivity was significantly reduced by occlusio
 
 ## Exploratory data analysis: reverse correlation
 
-In all three experiments, we found that the timing of decisions about absence is unaffected by occlusion. This made us wonder whether the timing of decisions about absence is sensitive to any aspect of the stimulus at all. For example, if decisions about absence are made once a noisy timer goes off and before sufficient evidence has been accumulated for presence [a similar model was proposed for decisions about absence in visual search; @wolfe2021, @chun1996], we should expect the timing of decisions about absence to be fully independent of the presented stimulus. If, on the other hand, participants adjust their decision times based on fluctuations in stimulus intensity that are below their decision threshold, decisions about absence should be slower when more evidence is available for presence. To answer this question, we ran a reverse correlation analysis.
+In all three experiments, we found the timing of decisions about absence to be unaffected by occlusion. This made us wonder whether the timing of decisions about absence is sensitive to any aspect of the stimulus at all. For example, if decisions about absence are made once a noisy timer goes off and before sufficient evidence has been accumulated for presence [a similar model was proposed for decisions about absence in visual search, @wolfe2021, @chun1996], we should expect the timing of decisions about absence to be fully independent of the presented stimulus. If, on the other hand, participants adjust their decision times based on fluctuations in stimulus intensity that are below their decision threshold, decisions about absence should be slower when more evidence is available for presence. To answer this question, we ran a reverse correlation analysis.
 
 Since luminance values were randomly sampled per pixel and frame, the perceived similarity between the presented stimulus and the target letter fluctuated both within and between trials. This allowed us to directly measure how stimulus-target similarity (quantified as the Pearson correlation between unoccluded pixels and their corresponding pixels in the target letter, statistically controlling for the proportion of pure-noise and hidden pixels in the frame) contributed to reaction times in decisions about presence and absence. Following previous reverse correlation studies of decision confidence [@zylberberg2012; @mazor2023paradoxical], we focused our analysis on the first 300 ms of the stimulus presentation, and extracted, per trial, the mean similarity between the display and the target letter in these first frames. We then computed the Spearman correlation between these trial-wise similarity measures and the reaction times, focusing our analysis on correct responses only (see Fig. \@ref(fig:RC)).
 
@@ -736,6 +833,8 @@ E2a.ta.sign_consistency <- E2a.df %>%
                                  summary_function = median, perm_repetitions = 100)
 
 
+set.seed(1)
+
 E3a.tp.directional <- E3a.df %>%
   filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
   filter(present==1 & correct==1) %>%
@@ -799,7 +898,7 @@ The research complied with all relevant ethical regulations, and was approved by
 
 ## Procedure
 
-Participants detected the presence or absence of a target letter (S or A, in different blocks) in a patch of dynamic grayscale noise presented at 15 frames per second. In each frame, noise was generated by randomly sampling grayscale values from a target image $I$. Specifically, for each pixel $S_{ij}$, we displayed the grayscale value for the corresponding pixel in the original image $I_{ij}$ with some probability $p$, and the grayscale value of a randomly chosen pixel $I_{i'j'}$ with probability $1-p$. On target-absent trials, $p$ was set to $0$, such that grayscale values of all pixels were randomly shuffled, with replacement. On target-present trials, the probability $p$ was set to a positive number between 0 and 1. In Exp. 1 and 2, $p$ was calibrated online to achieve performance levels of around 80%, following a 1-up-3-down procedure, starting at $v=0.35$ and following a multiplicative set size of $0.9$, which moved closer to 1 following each change direction in the calibration process. In Exp. 3, $p$ was set to 0.3 throughout the entire experiment. Responses were delivered using the F and G keyboard keys (counterbalancing response mapping across subjects).
+Participants detected the presence or absence of a target letter (S or A, in different blocks) in a patch of dynamic grayscale noise presented at 15 frames per second. In each frame, noise was generated by randomly sampling grayscale values from a target image $I$. Specifically, for each pixel $S_{ij}$, we displayed the grayscale value for the corresponding pixel in the original, noise-free, image $I_{ij}$ with some probability $p$, and the grayscale value of a randomly chosen pixel $I_{i'j'}$ (sampled with replacement) with probability $1-p$. On target-absent trials, $p$ was set to $0$, such that grayscale values of all pixels were randomly shuffled, with replacement. On target-present trials, the probability $p$ was set to a positive number between 0 and 1. In Exp. 1 and 2, $p$ was calibrated online to achieve performance levels of around 80%, following a 1-up-3-down procedure, starting at $v=0.35$ and following a multiplicative set size of $0.9$, which moved closer to 1 following each change direction in the calibration process. In Exp. 3, $p$ was set to 0.3 throughout the entire experiment. Responses were delivered using the F and G keyboard keys (counterbalancing response mapping across subjects).
 
 After reading the instructions, participants completed four practice trials. In case their accuracy in these four practice trials fell below 3/4, they were reminded of task instructions and given additional practice trials, until reaching the desired accuracy level. Otherwise, they continued to the main part of the experiment. Here, their task was exactly the same, but the noise patch was partly occluded. In Exp. 1, occluders were randomly positioned static black pixels, which covered 5% or 15% of the stimulus on different trials. In Exp. 2 and 3, occluders were randomly positioned rows of black pixels (2 or 6 rows, on different trials) which extended beyond the stimulus. In order to make clear that the occluders are not part of the main stimulus, occluder rows in Exp. 2 and 3 preceded the main stimulus by 500 ms. Finally, in Exp. 3, two similar "reference" stimuli were presented on both sides of the central stimulus. In these reference stimuli, the target letter was always presented with $p=0.3$ regardless of the presence of a letter in the central stimulus. Participants were explained that they should respond based on the central stimulus only, and continued to the main part of the experiment only once they had passed a comprehension check.
 
