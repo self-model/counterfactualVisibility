@@ -35,7 +35,8 @@ E2.raw_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all
          correct = as.numeric(correct),
          RT = as.numeric(RT),
          present=as.numeric(present),
-         resp = response==presence_key) 
+         resp = response==presence_key,
+         confidence = 0.5+confidence/2)  
 
 E2.export <- read_csv('../experiments/Exp2rows/data/prolific_export_batch1.csv') %>%
   rbind(read_csv('../experiments/Exp2rows/data/prolific_export_batch2.csv'))%>%
@@ -57,7 +58,7 @@ E3.raw_df <- read_csv('../experiments/Exp3reference/data/jatos_results_data_batc
          correct = ifelse(correct=='true',1,0),
          RT = as.numeric(RT),
          present=as.numeric(present),
-         resp = response==presence_key) 
+         resp = response==presence_key)  
 
 E3.export <- read_csv('../experiments/Exp3reference/data/prolific_export_batch1.csv') 
 

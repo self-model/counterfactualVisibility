@@ -14,7 +14,8 @@ E2.raw_df <- read_csv('https://osf.io/gdyr6/download') %>%
          correct = as.numeric(correct),
          RT = as.numeric(RT),
          present=as.numeric(present),
-         resp = response==presence_key) 
+         resp = response==presence_key,
+         confidence = 0.5+confidence/2)  
 
 E3.raw_df <- read_csv('https://osf.io/5qmke/download') %>%
   # filter(frame_index==0)%>%
