@@ -27,7 +27,7 @@ affiliation:
 
 abstract: |
 
-  Perceptual decisions are based not only on incoming sensory input, but also on our beliefs regarding the likelihood of input given competing hypotheses about the world. This role of probabilistic reasoning in perception is especially pertinent when deciding that a stimulus is absent. In decisions about absence, sensory input is mostly missing and decisions are based not on the visibility of a presented stimulus, but on counterfactual visibility: the degree to which a stimulus would have been visible if present. To test the effects of beliefs about counterfactual visibility on perceptual decisions, we had participants perform a near-threshold detection task under different levels of partial stimulus occlusion, thereby visibly manipulating the likelihood function going from external world states to internal perceptual states. More visible stimuli made participatns more accurate, speedy, and confident in their responses. Mirroring these effects, when absent stimuli would have been more visible, if present, participants were also more accurate and confident in their decisions about absence, and showed reliable, yet variable, effects on their decision times. Variability in the effect of occlusion on decisions about absence was captured by an ideal observer model, with varying degrees of metacognitive insight into the efffect of occlusion on visibility. Together, our results are most consistent with the incorporation of counterfactual visibility into perceptual decisions about absence, with implications for the inferential nature of visual perception more broadly. 
+  Perceptual decisions are based not only on incoming sensory input, but also on our beliefs regarding the likelihood of input given competing hypotheses about the world. This role of probabilistic reasoning in perception is especially pertinent when deciding that a stimulus is absent, where decisions are based not on the visibility of a stimulus, but on counterfactual visibility: the degree to which a stimulus would have been visible if present. We provide a generalized, normative model of visual detection that accounts for this inferential asymmetry and accurately predicts key behavioural asymmetries in visual detection. To test the effects of beliefs about counterfactual visibility on perceptual decisions, we present data from three pre-registered experiments where participants performed a near-threshold detection task under different levels of partial stimulus occlusion, thereby visibly manipulating the likelihood function going from external world states to internal perceptual states. We observe differential effects of sensory evidence and occlusion on decisions about presence and absence. Our normative model of visual detection accounts for these asymmetries, and further reveals robust individual differences in counterfactual perception, with some participants systematically incorporating counterfactual visibility into perceptual decisions about absence while others systematically do not. We discuss implications for the varied and inferential nature of visual perception more broadly.
   
   <!-- https://tinyurl.com/ybremelq -->
   
@@ -52,17 +52,25 @@ bibliography: references.bib
 
 After checking Taylor Swift's Wikipedia page, we are confident that she hasn't announced her retirement from music. If she had, it would have been mentioned on her page. We also checked Russian cellist Natalia Gutman's page and didn't see any mention of a similar announcement, but we are not so sure she hasn't made one since her Wikipedia page only gets updated irregularly. The absence of evidence on Wikipedia is enough to make a solid inference in the case of Swift but not in the case of Gutman because we know that information about Swift spreads more efficiently on the internet.
 
-This paper discusses how we make inferences based on the absence of evidence in visual perception. Such inferences about the negation of a hypothesis ($H$) depend on our belief in the probability that we would observe evidence ($E$) if $H$ were true ($p(E|H)$) [@walton1992nonfallacious; @walton2010arguments; @oaksford2004bayesian]. In other words, we believe that something is not true (for example, that Taylor Swift hasn't announced her retirement from music) when we believe that "if it were true, we would have heard about it by now" [@goldberg2011if].
+More generally, inferences about the negation of a hypothesis ($H$) depend on our belief in the probability that we would observe evidence ($E$) if $H$ were true ($p(E|H)$) [@walton1992nonfallacious; @walton2010arguments; @oaksford2004bayesian]. In other words, we believe that something is not true (for example, that Taylor Swift hasn't announced her retirement from music) when we believe that "if it were true, we would have heard about it by now" [@goldberg2011if].
 
-Here we examine whether people apply a similar reasoning in the domain of visual perception. Simply not perceiving something does not necessarily mean it is not there; we also need to be certain that we would have perceived it if it were present. As a result, detection decisions in the absence of a stimulus, their biases, timing, and confidence, provide a window into the effects of *counterfactual visibility* -- implicit beliefs about the visibility of stimuli that are not in fact present -- on perceptual decisions.
+Here we examine whether people apply a similar reasoning in the domain of visual perception, and specifically in perceptual decisions about the absence of stimuli. Namely, we ask if absence is inferred when 1) a stimulus is not visible, and 2) it is likely that it would have been visible if it were present. If this is the case, detection decisions in the absence of a stimulus, their biases, timing, and confidence, should depend not on the visibility of the absence of stimuli, but on *counterfactual visibility*: beliefs about the visibility of stimuli that are not in fact present.
 
-Previous studies provide conflicting evidence with respect to the role of counterfactual visibility in perceptual decisions. Some evidence comes from visual search experiments, where participants immediately recognize the absence of a salient target in cases where a target would have been immediately perceived [@wolfe2021; @mazor2022efficient]. Such flexible adjustment of search-termination times as a function of expected search difficulty may be the signature of a counterfactual reasoning process (e.g., "a red target would have drawn my attention"). Alternatively, it may reflect the adoption of a heuristic or a set of decision rules (e.g., "first, check if there is anything red in the display. If not, report target-absence"). 
+<!-- Previously reported behavioural asymmetries in the perception of presence and absence provide some indirect support for this inferential asymmetry, where presence is directly perceived but absence is inferred. Decisions about absence are commonly slower, and are given with lower levels of subjective confidence, relative to decisions about presence [@mazor2021stage; @mazor2023paradoxical; @mazor2020distinct]. Furthermore, *metacognitive sensitivity*, that is, the alignment between subjective confidence and objective accuracy, is typically lower in decisions about absence [@kellij2021; @mazor2023paradoxical; @mazor2021stage; @mazor2020distinct; @meuwese2014]. -->
 
-Outside visual search, evidence for the incorporation of counterfactual visibility into perceptual decisions is more scarce. In near-threshold detection experiments, participants struggle to adjust their detection criterion (the level of perceptual evidence above which they report stimulus presence) as a function of the expected visibility of stimuli. While it makes sense to interpret faint stimuli as more likely to indicate target presence when expected visibility is low, participants fail to do so when visibility is cued [@gorea2000failure], or manipulated using visual attention [@rahnev2011] or position in the visual field [@solovey2015]. It seems that in these cases, decisions about absence may be based on a fixed, one-size-fits-all perceptual criterion, rather than the invocation of counterfactuals or the adoption of a flexible decision heuristic. 
+<!-- In what follows, we show that these asymmetries in reaction time and confidence are expected in rational decision makers when the informational value of evidence for presence and absence is itself asymmetrical. Using the same ideal-observer model, we then show that detection decisions in the absence of a stimulus, their biases, timing, and confidence, are critically dependent on *counterfactual visibility* -- implicit beliefs about the visibility of stimuli that are not in fact present -- on perceptual decisions. Finally, we present data from three visual detection experiments, where decisions about presence and absence were taken under different levels of stimulus occlusion. This partial occlusion manipulation allowed us to experimentally dissociate visibility from counterfactual visibility, independently measuring the effects of each on perceptual decisions and confidence in presence and absence. -->
 
-Other theoretical accounts suggest that counterfactual visibility is never needed for perceptual decisions, because the absence of stimuli can be directly perceived in sensory channels. For example, @gold2001 postulate that sensory neurons may have their corresponding "anti-neurons", which fire in response to the absence of a stimulus. Such anti-neurons make it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by absence-sensitive anti-neurons. Together with the above-mentioned reports of suboptimal placements of the decision criterion, it is unclear whether beliefs about counterfactual visibility ever contribute to perceptual decisions, and if they do, in what ways.
+Previous studies provide conflicting evidence with respect to the role of counterfactual visibility in perceptual decisions. Some evidence comes from visual search experiments, where participants immediately recognize the absence of a salient target in cases where a target would have been immediately perceived [@wolfe2021; @mazor2022efficient]. Such flexible adjustment of search-termination times as a function of expected search difficulty may be the signature of a counterfactual reasoning process. For example, when inferring there is no direct target in an array full of blue distractors, an observer may reason "I am not seeing the red target, and a red target would have immediately drawn my attention, therefore, no target is present in this display".
 
-Here, we attempted to elucidate the roles of beliefs about counterfactual visibility in perception by having participants perform a visual detection task under different levels of stimulus occlusion. If counterfactual visibility is incorporated into perceptual decisions, but not if detection follows a one-size-fits-all perceptual criterion, occlusion should affect decisions not only when a target is present behind the occluder, but also when there is nothing to occlude. 
+<!-- As a result, detection decisions in the absence of a stimulus, their biases, timing, and confidence, provide a window into the effects of *counterfactual visibility* -- implicit beliefs about the visibility of stimuli that are not in fact present -- on perceptual decisions. -->
+
+Outside visual search, evidence for the incorporation of counterfactual visibility into perceptual decisions is more scarce. In near-threshold detection experiments, participants struggle to adjust their detection criterion (the level of perceptual evidence above which they report stimulus presence) as a function of the expected visibility of stimuli. While it makes sense to interpret faint stimuli as more likely to indicate target presence when expected visibility is low, participants fail to do so when visibility is cued [@gorea2000failure], or manipulated using visual attention [@rahnev2011] or position in the visual field [@solovey2015]. It seems that in these cases, decisions about absence may be based on a fixed, one-size-fits-all perceptual criterion, rather than the invocation of counterfactuals or the adoption of a flexible decision heuristic.
+
+Other theoretical accounts suggest that counterfactual visibility is never needed for perceptual decisions, because the absence of stimuli can be directly perceived in sensory channels. For example, @gold2001 postulate that sensory neurons may have their corresponding "anti-neurons", which fire in response to the absence of a stimulus. Such anti-neurons make it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by neurons that are sensitive to the physical correlates of absent-ness. Together with the above-mentioned reports of suboptimal placements of the decision criterion, it is unclear whether beliefs about counterfactual visibility ever contribute to perceptual decisions outside visual search, and if they do, in what ways.
+
+In what follows, we first introduce our task, where decisions about presence and absence were taken under different levels of stimulus occlusion. This partial occlusion manipulation allowed us to experimentally dissociate visibility from counterfactual visibility, independently measuring the effects of each on perceptual decisions and confidence in presence and absence. We then contrast two computational accounts for the inferential processes that may underlie behaviour in this task, and in perceptual detection more generally. We show that behavioural patterns in perceptual detection naturally emerge in an ideal observer model when only presence, but not absence, is positively represented in sensory channels. Using the same ideal-observer model, we then show that detection decisions in the absence of a stimulus, their biases, timing, and confidence, are critically dependent on counterfactual visibility: beliefs about the expected visibility of stimuli that are not physically present. Finally, we present data from three visual detection experiments, revealing reliable population heterogeneity in the incorporation of counterfactual visibility into perceptual decisions.  
+
+<!-- Here, we attempted to elucidate the roles of beliefs about counterfactual visibility in perception by having participants perform a visual detection task under different levels of stimulus occlusion. If counterfactual visibility is incorporated into perceptual decisions, but not if detection follows a one-size-fits-all perceptual criterion, occlusion should affect decisions not only when a target is present behind the occluder, but also when there is nothing to occlude. -->
 
 <!-- As expected, partial occlusion had sizable effects on detection when a stimulus was present, robustly degrading perceptual sensitivity, slowing down responses, and bringing down subjective confidence ratings. Occluding absent targets also degraded perceptual specificity and brought down subjective confidence ratings, but had qualitatively different effects on the response times for different participants, reliably slowing down some and speeding up others. This asymmetric pattern is consistent with stimulus absence being inferred, rather than directly perceived, based on counterfactual visibility. -->
 
@@ -84,7 +92,7 @@ groundhog.library(
     'jsonlite', #parsing data from sort_trial
     'afex', #for anova
     'pracma' # for AUCs
-  ), "2022-12-01"
+  ), "2023-12-01"
 )
 
 library('signcon') # ran remotes::install_github('mufcItay/signcon') on 27/07/2023; commit 4bc947e
@@ -96,17 +104,393 @@ knitr::opts_chunk$set(warning=F,echo=F,message=F,cache=T)
 
 # Results
 
+## Task: visual detection under partial occlusion
+
+In three pre-registered online experiments, participants performed a near-threshold detection task in which they made decisions about the presence or absence of a target letter (A or S, in different blocks) in a noisy, dynamic stimulus (Fig. \@ref(fig:design)A). The stimulus remained on the screen, refreshing at 15 frames per second, until a response was made. In Exp. 2, participants rated their confidence on an analog scale after making a decision (Fig. \@ref(fig:design)B). On different trials, random parts of the display were occluded by an overlaid layer of black pixels (Exp. 1) or lines (Exp. 2 and 3; Fig. \@ref(fig:design)C). Participants' task was to "ignore the black stuff, focus on the noise that is under it, and determine whether the letter appeared in it or not". We chose to manipulate stimulus visibility in this way because the effect of occlusion on visibility is relatively obvious: the more occluded objects are, the harder they are to see. This way, occlusion affects not only stimulus visibility, but also beliefs about the counterfactual visibility of stimuli that are not physically present (Fig. \@ref(fig:design)D).
+
+```{r design, echo=FALSE, fig.cap="Rationale and experimental design for Experiments 1-3. A) example frames from target-present (blue) and target-absent (red) trials. B) trial structure in Exp. 2. C) occlusion conditions in the three experiments. In Exp. 1, on different trials we occluded a random subset of 5% or 15% of the pixels in the stimulus. In Exp. 2 and 3, on different trials we occluded a random subset of 2 or 6 pixel rows. In Exp. 3, the task-relevant stimulus was falnked by two reference stimuli that, known to the subject, always had the target letter in them. Participants performed two 32-trial blocks in which the target was the letter S and two blocks in which the target was the letter A. The order of the two letters was randomised between participants. D) occluding more of a target letter decreases its visibility (black markers). Occlusion has no effect on target visibility when the target is absent, but it affects *counterfactual visibility* (white markers): the expected visibility of the target, had it been present.  *The occluder preview screen only appeared in Exp. 2 and 3. **Confidence ratings were given only in Exp. 2, blocks 3 and 4", out.width = '75%'}
+knitr::include_graphics("figures/design_occlusion_noisy_stim.png")
+```
+
+## An ideal observer model of visual detection
+
+In visual detection tasks, decisions about absence are commonly slower, and are given with lower levels of subjective confidence, relative to decisions about presence [@mazor2021stage; @mazor2023paradoxical; @mazor2020distinct]. Presence-absence asymmetries in reaction time and confidence are expected if evidence is only ever available to support presence, leaving absence to be inferred tentatively and based on the absence of evidence. To formulate this asymmetry in the availability of evidence, we present two variants of a Partially Observed Markov Decision Process [POMDP, @littman2009] model of perceptual detection: a symmetric variant, equipped with a presence-sensor and an absence-sensor (Fig. \@ref(fig:model), left panels) and an asymmetric variant, equipped only with an absence-sensor. Crucially, instead of fitting model parameters to observed behaviour, our motivation is to ask about the conditions under which a given policy would be rational from the point of view of the participant [@anderson1990]. We provide a high-level description of the model here and a more detailed description in the Methods section. As we show, asymmetries in decision time and decision confidence are borne out of rational evidence accumulation when the value of positive and negative evidence is itself asymmetrical.
+
+```{r model, echo=FALSE, fig.cap="Symmetric and asymmetric models of visual detection. A) model architecture. Target presence affects the activation probability of presence and absence sensors. The asymmetric model (right) has no absence sensor. The agent then perceives a series of binary outcomes (sensor activations), based on which it attempts to guess the true world state (target presence or absence). This is done by extracting and accumulating the log likelihood ratio (LLR) for target presence versus absence (interpretation) and deciding whether to make a decision based on available evidence, or alternatively whether to accumulate more evidence. In making this decision, the agent balances the incentive to be as accurate as possible (only correct decisions are associated with a reward) and the exponential discounting of the value of reward as a function of time. B) The first samples from two example trials, one from each model. C) behavioural predictions for an ideal observer. Only the asymmetric model predicts that decisions about absence should be slower, and that they should be accompanied by lower levels of subjective condfidence, than decisions about presence. ", out.width = '75%'}
+knitr::include_graphics("figures/compModelGraph.png")
+```
+
+We model sensory observations as the binary (on/of) activations of visual sensors which are probabilistically tuned to one state of the world. For example, the "presence sensor" in the symmetric model (\@ref(fig:model)A, left panel) has a $0.05$ activation probability when a target is absent, but this probability goes up to $0.15$ when a target is present. The agent is rewarded for making accurate guesses regarding the state of the world (stimulus presence or absence), given these observations. To increase the probability of being correct, the agent can choose to wait and accumulate more observations before making a decision. However, the subjective value of accuracy rewards is subject to temporal discounting, rendering the value of later correct decisions lower than that of earlier ones.
+
+Given these settings, our agent implements an optimal policy, updating its beliefs about the state of the world by tracking the log likelihood ratio (LLR) between presence and absence given each observation, and committing to a decision only when the expected value of making a decision is higher than the expected value of making a decision later, assuming the same policy will be used in later time points. For our specified setting, the optimal policy is to commit to a "target present" decision once the accumulated LLR hits an upper boundary, commit to a "target absent" decision once the accumulated LLR hits a lower boundary, and continue to accumulate evidence otherwise (see Fig. \@ref(fig:model)B, left panel, for the first time points from an example trial). As an additional measure, we assume that decision confidence equals the probability of being correct at the time of committing to a decision, given the accumulated evidence so far.
+
+The left panels in Fig. \@ref(fig:model) represent a symmetric setting, where two sensors are symmetrically tuned to presence or absence. In this setting, activation of the presence sensor provides evidence for presence and activation of the absence sensor provides similarly informative evidence for absence. Whenever both sensors are inactive, and whenever both sensors activate simultaneously, the belief state stays fixed ($LLR=0$). In this setting, decisions about presence and absence are conceptually symmetrical, resulting in symmetric reaction time and subjective confidence profiles (fig. \@ref(fig:model)C, left panel).
+
+Compare this with the asymmetric model in the right panels of Fig. \@ref(fig:model). This model is identical, except that it lacks an absence sensor (in order to match the decision accuracy of the two models, we also increased the sensitivity of the presence sensor from $0.15$ to $0.20$). This asymmetric model is tasked with a more difficult challenge: now, absence cannot be inferred based on the activation of a sensor. Instead, it needs to be inferred based on periods of inactivation of the presence sensor that are especially unlikely when a target is present. As a result, unlike the symmetric accumulator that is sensitive only to sensor activation, the asymmetric accumulator is pulled toward the lower boundary whenever the present sensor is inactive (Fig. \@ref(fig:model)B, right panel). Still, sensor inactivation is much less informative than sensor activation: activation is $4$ times more likely when a target is present than absent, but inactivation is more likely by a factor of only $1.18$ when a target is absent than present. This asymmetry in the information value of evidence for presence and absence results in slower decisions about absence and lower confidence levels in such decisions, compared to decisions about presence (fig. \@ref(fig:model)C, right panel), in line with the reaction time and confidence profiles of perceptual detection experiments [@kellij2021; @mazor2023paradoxical; @mazor2021stage; @mazor2020distinct; @meuwese2014]. 
+
+### Modeling occlusion effects
+
+We proceed with the asymmetric model, and simulate stimulus occlusion as a scaling of the probability of sensor activation by a parameter $\alpha \in [0,1]$, such that lower levels of $\alpha$ make the sensor less likely to activate. This way, $\alpha$ can be thought of as modulating the visibility of targets (Fig. \@ref(fig:model-occlusion)A). Importantly, in addition to the effects of $\alpha$ on stimulus visibility, beliefs about $\alpha$ also affect how sensory input is interpreted, and how much certainty agents seek before they commit to a decision. Fig. \@ref(fig:model-occlusion)B illustrates the interpretation of the same sensory samples when the agent believes $\alpha$ to be $1$ (corresponding to low occlusion, in black) or $0.7$ (corresponding to high occlusion, in gray). Notably, the information value of sensor inactivation in model B is diminished when $\alpha=0.7$, making the same ambiguous sequence of samples appear more consistent with target presence if the display is known to be occluded. 
+
+In deriving model predictions, we consider two variants of the model (Fig. \@ref(fig:model-occlusion)B). Variant $A$ incorporates into its perceptual decisions fully accurate beliefs about the effect of $\alpha$ on stimulus visibility. This affects both the interpretation stage (when $alpha$ is believed to be low, sensor inactivation, but not sensor activation, becomes less informative) and the action selection stage (by affecting the expected value of future evidence, making the agent more willing to settle for lower decision confidence when occlusion is high). Variant $B$, on the other hand, entirely ignores the expected effects of $\alpha$ on the probability of sensor activation, interpreting evidence in the same average way in both high-occlusion and low-occlusion trials. 
+ 
+```{r model-occlusion, echo=FALSE, fig.cap="Modelling the effects of occlusion on visual detection. A) We model the effect of occlusion as scaling of the probability of sensor activation. B) The first sensory samples from example trials and their corresponding interpretations as a function of the believed visibility level. C) reaction time and confidence effects in simulated rational observers as a function of target presence and absence and level of occlusion, correct trials only. Agent A considers the effect of occlusion when interpreting sensory evidence and making decisions, whereas agent B takes evidence at face value.", out.width = '75%'}
+knitr::include_graphics("figures/compModelOcclusionGraphAsym.png")
+```
+
+
+The two agents presented a similar qualitative pattern for decisions in the presence of a target (blue lines in Fig. \@ref(fig:model-occlusion)C): occluding more of the display resulted in a decrease in hit rate, slower correct decisions about presence, and lower levels of subjective confidence in decisions about presence, all consistent with a decrease in the frequencey of sensor activation.
+
+In contrast, the effect of occlusion when a target was absent was qualitatively different for the two agents (red lines in Fig. \@ref(fig:model-occlusion)C). While occluding more of the display made $A$ commit more false-alarms, it made $B$ make fewer of them. $A$'s decisions about absence were slower when more of the display was occluded, whereas $B$'s decisions about absence were *faster*. Finally, $A$ was less confident in decisions about absence when more of the display was occluded, but this was not true of $B$. Unlike its effect on decisions about presence, the effects of occlusion on decisions about absence were entirely mediated by usage of meta-perceptual knowledge about the influence occlusion had on visibility.
+
 ```{r load-and-process}
 source("../analysis/loadAndPreprocessData.R")
 ```
 
+```{r load_and_plot_occlusion_simulation, echo=FALSE, cache=TRUE}
+detection_colors = c('#377eb8', '#e41a1c');
+
+sim.occlusion <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+
+sim.occlusion_f1 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_fault1.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+
+sim.occlusion_sym <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_antineuron.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+
+sim.occlusion_sym_f1 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_antineuron_fault1.csv') %>%
+  mutate(correct = ifelse(decision==present,1,0))
+
+pRT_collapsed <- sim.occlusion %>% 
+  filter(correct==1 & occluded_rows==2) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=present,y=RT,fill=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_shape_manual(values=c(21,22))+
+  scale_y_continuous(limits=c(10,22))+
+  geom_point(size=3, shape=21) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  labs(y='number of time points',title='Reaction time',x='') 
+
+ggsave('../docs/figures/model/RT_collapsed_square.png',pRT_collapsed, width=2,height=2)
+
+
+pconfidence_collapsed <- sim.occlusion %>% 
+  filter(correct==1 & occluded_rows==2) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=present,y=confidence,fill=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_shape_manual(values=c(21,22))+
+  scale_y_continuous(limits=c(0.85,0.95))+
+  geom_point(size=3, shape=21) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  labs(y='Bayesian p(correct)',title='Confidence',x='') 
+
+ggsave('../docs/figures/model/confidence_collapsed_square.png',pconfidence_collapsed, width=2,height=2)
+
+
+detection_colors = c('#377eb8', '#e41a1c');
+labels = c('Present','Absent')
+
+conf_discrete_counts <- sim.occlusion %>%
+  mutate(confidence = round(confidence*100)/100)%>%
+  group_by(decision, correct, confidence, .drop=FALSE) %>%
+  tally() %>%
+  spread(correct, n, sep='',fill=0) %>%
+  arrange(desc(confidence), by_group=TRUE) %>%
+  group_by(decision)%>%
+  mutate(cs_correct=cumsum(correct1)/sum(correct1),
+         cs_incorrect=cumsum(correct0)/sum(correct0))
+
+additional_lines = conf_discrete_counts %>%
+  group_by(decision) %>%
+  reframe(confidence=c(0,1),cs_incorrect = c(0,1),cs_correct=c(0,1))
+
+conf_discrete_counts = rbind(conf_discrete_counts,additional_lines)
+
+labels=c('present','absent')
+
+p<- ggplot(data=conf_discrete_counts%>%mutate(response=ifelse(decision==1,labels[1],labels[2])%>%factor(levels=labels)),
+       aes(x=cs_incorrect, y=cs_correct, color=response)) +
+  geom_line(size=1.3) +
+  # geom_point(aes(shape = response))+
+  geom_abline(slope=1)+
+  theme_bw() + coord_fixed() +
+  labs(x='p(conf | incorrect)', y='p(conf | correct)')+ 
+  scale_color_manual(values=detection_colors)+
+  scale_fill_manual(values=detection_colors) +
+  scale_x_continuous(breaks=c())+
+  scale_y_continuous(breaks=c())+
+  geom_rect(aes(xmin=0,xmax=1,ymin=0,ymax=1),size=0.5,color='black',alpha=0)+
+  theme_classic()+
+  theme(legend.position='none')+
+  labs(title='mc sensitivity')
+
+ggsave('../docs/figures/model/AUC_square.png',p,width=2,height=2)
+
+#-------
+
+pRT_collapsed <- sim.occlusion_sym %>% 
+  filter(correct==1 & occluded_rows==2) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=present,y=RT,fill=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_shape_manual(values=c(21,22))+
+  scale_y_continuous(limits=c(10,22))+
+  geom_point(size=3, shape=21) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  labs(y='number of time points',title='Reaction time',x='') 
+
+ggsave('../docs/figures/model/RT_collapsed_square_sym.png',pRT_collapsed, width=2,height=2)
+
+
+pconfidence_collapsed <- sim.occlusion_sym %>% 
+  filter(correct==1 & occluded_rows==2) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=present,y=confidence,fill=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_shape_manual(values=c(21,22))+
+  scale_y_continuous(limits=c(0.85,0.95))+
+  geom_point(size=3, shape=21) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  labs(y='Bayesian p(correct)',title='Confidence',x='') 
+
+ggsave('../docs/figures/model/confidence_collapsed_square_sym.png',pconfidence_collapsed, width=2,height=2)
+
+
+  
+detection_colors = c('#377eb8', '#e41a1c');
+labels = c('Present','Absent')
+
+conf_discrete_counts <- sim.occlusion_sym %>%
+  mutate(confidence = round(confidence*100)/100)%>%
+  group_by(decision, correct, confidence, .drop=FALSE) %>%
+  tally() %>%
+  spread(correct, n, sep='',fill=0) %>%
+  arrange(desc(confidence), by_group=TRUE) %>%
+  group_by(decision)%>%
+  mutate(cs_correct=cumsum(correct1)/sum(correct1),
+         cs_incorrect=cumsum(correct0)/sum(correct0))
+
+additional_lines = conf_discrete_counts %>%
+  group_by(decision) %>%
+  reframe(confidence=c(0,1),cs_incorrect = c(0,1),cs_correct=c(0,1))
+
+conf_discrete_counts = rbind(conf_discrete_counts,additional_lines)
+
+labels=c('present','absent')
+
+p<- ggplot(data=conf_discrete_counts%>%mutate(response=ifelse(decision==1,labels[1],labels[2])%>%factor(levels=labels)),
+       aes(x=cs_incorrect, y=cs_correct, color=response)) +
+  geom_line(size=1.3) +
+  # geom_point(aes(shape = response))+
+  geom_abline(slope=1)+
+  theme_bw() + coord_fixed() +
+  labs(x='p(conf | incorrect)', y='p(conf | correct)')+ 
+  scale_color_manual(values=detection_colors)+
+  scale_fill_manual(values=detection_colors) +
+  scale_x_continuous(breaks=c())+
+  scale_y_continuous(breaks=c())+
+  geom_rect(aes(xmin=0,xmax=1,ymin=0,ymax=1),size=0.5,color='black',alpha=0)+
+  theme_classic()+
+  theme(legend.position='none')+
+  labs(title='mc sensitivity')
+
+ggsave('../docs/figures/model/AUC_square_sym.png',p,width=2,height=2)
+
+```
+
+```{r plot simulated occlusion effects, echo=FALSE, cache=TRUE}
+
+RT_A<- sim.occlusion %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(10,25))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='time points',x='') 
+
+ggsave('../docs/figures/model/RT_A.png',RT_A, width=1.6,height=1.6)
+
+RT_B<- sim.occlusion_f1 %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(10,25))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='time points',x='') 
+
+ggsave('../docs/figures/model/RT_B.png',RT_B, width=1.6,height=1.6)
+
+RT_sym_A<- sim.occlusion_sym %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(10,25))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='time points',x='') 
+
+ggsave('../docs/figures/model/RT_Asym.png',RT_sym_A, width=1.6,height=1.6)
+
+RT_sym_B<- sim.occlusion_sym_f1 %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
+  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(10,25))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='time points',x='') 
+
+ggsave('../docs/figures/model/RT_Bsym.png',RT_sym_B, width=1.6,height=1.6)
+
+
+conf_A<- sim.occlusion %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='Bayes p(correct)',x='') 
+
+ggsave('../docs/figures/model/conf_A.png',conf_A, width=1.6,height=1.6)
+
+conf_B<- sim.occlusion_f1 %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='Bayes p(correct)',x='') 
+
+ggsave('../docs/figures/model/conf_B.png',conf_B, width=1.6,height=1.6)
+
+conf_sym_A<- sim.occlusion_sym %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='Bayes p(correct)',x='') 
+
+ggsave('../docs/figures/model/conf_Asym.png',conf_sym_A, width=1.6,height=1.6)
+
+conf_Bsym<- sim.occlusion_sym_f1 %>% 
+  filter(correct==1) %>%
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
+  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='Bayes p(correct)',x='') 
+
+ggsave('../docs/figures/model/conf_Bsym.png',conf_Bsym, width=1.6,height=1.6)
+
+acc_A<- sim.occlusion %>% 
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(errors=1-mean(correct)) %>%
+  ggplot(aes(x=occluded_rows,y=errors,fill=present, color=present, shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0,0.3), breaks=seq(0,0.35,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='error rate',x='') 
+
+ggsave('../docs/figures/model/acc_A.png',acc_A, width=1.6,height=1.6)
+
+acc_B<- sim.occlusion_f1 %>% 
+  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
+  group_by(present, occluded_rows)%>%summarise(errors=1-mean(correct)) %>%
+  ggplot(aes(x=occluded_rows,y=errors,fill=present, color=present, shape=present)) +
+  scale_fill_manual(values=detection_colors) +
+  scale_color_manual(values=detection_colors) +
+  scale_y_continuous(limits=c(0,0.3), breaks=seq(0,0.35,0.05))+
+  geom_line()+
+  geom_point(size=2) +
+  theme_classic() +
+  theme(legend.pos='na') +
+  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
+  labs(y='error rate',x='') 
+
+ggsave('../docs/figures/model/acc_B.png',acc_B, width=1.6,height=1.6)
+
+
+
+```
+
+
+
+
+
 ## Experiment 1: pixel occlusion
 
 `r E1.raw_df$subj_id%>%unique()%>%length()` participants performed a near-threshold detection task, in which they made decisions about the presence or absence of a target letter (A or S, on different blocks) in a noisy, dynamic stimulus (see Fig. \@ref(fig:design)B). On different trials, either 5 or 15 percent of the stimulus pixels were occluded by a static layer of randomly positioned black pixels. Participants' task was to "ignore the black stuff, focus on the noise that is under it, and determine whether the letter appeared in it or not". Based on our [pre-registered exclusion criteria](https://osf.io/e6x82), we excluded `r E1.to_exclude%>%length()` participants, leaving `r E1.df$subj_id%>%unique()%>%length()` for the main analysis.
-
-```{r design, echo=FALSE, fig.cap="Rationale and experimental design for Experiments 1-3. A) occluding more of a target letter decreases its visibility (black markers). Occlusion has no effect on target visibility when the target is absent, but it affects *counterfactual visibility* (white markers): the expected visibility of the target, had it been present. B) example frames from target-present (blue) and target-absent (red) trials. C) trial structure in Exp. 2. D) occlusion conditions in the three experiments. In Exp. 1, on different trials we occluded a random subset of 5% or 15% of the pixels in the stimulus. In Exp. 2 and 3, on different trials we occluded a random subset of 2 or 6 pixel rows. In Exp. 3, the task-relevant stimulus was falnkered by two reference stimuli that, known to the subject, always had the target letter in them. Participants performed two 32-trial blocks in which the target was the letter S and two blocks in which the target was the letter A. The order of the two letters was randomised between participants. *The occluder preview screen only appeared in Exp. 2 and 3. **Confidence ratings were given only in Exp. 2, blocks 3 and 4", out.width = '75%'}
-knitr::include_graphics("figures/design_occlusion_noisy_stim.png")
-```
 
 ```{r SDT, echo=FALSE, cache=TRUE}
 
@@ -316,11 +700,9 @@ E3.RT_by_occlusion_in_presence_correct_only <- E3.df %>%
   mutate(diff=hide_proportion0.1-hide_proportion0.35);
 ```
 
-Mean accuracy in the main experiment was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`). Consistent with the response time profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], response times were significantly shorter in "target present" compared to "target absent" responses (pre-registered Hypothesis 1: `r printnum(E1.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E1.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). This is expected if decisions about absence are reached only when the agent can be confident that presence would have been detected [@mazor2021stage].
+Mean accuracy in the main experiment was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`). Consistent with the response time profile of detection tasks and with the predictions of the asymmetric model (Fig. \@ref(fig:model)), response times were significantly shorter in "target present" compared to "target absent" responses (pre-registered Hypothesis 1: `r printnum(E1.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E1.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). 
 
-As a first measure of the effects of stimulus occlusion on target detection, we examined the difference in hit rate: the probability of correctly reporting stimulus presence when a stimulus is present. As expected, hit rate was reduced by occlusion (`r apa_print(E1.hit_rate_by_occlusion$diff%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)C, blue lines), with a mean hit rate of `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%sd())`) when 5% of the pixels were occluded, versus `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%sd())`) when 15% of the pixels were occluded. Unsurprisingly, occluding more of the target made it more difficult to spot.
-
-Next, we asked whether stimulus occlusion made participants slower to detect the target letter. As expected, correct target-present decisions were slowed down by pixel occlusion (pre-registered Hypothesis 2: `r printnum(E1.RT_by_occlusion_in_presence_correct_only%>%pull(hide_proportion0.05)%>%mean()/1000)` seconds for 5% occlusion vs `r printnum(E1.RT_by_occlusion_in_presence_correct_only%>%pull(hide_proportion0.15)%>%mean()/1000)` seconds for 15% occlusion; `r apa_print(E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)B, blue lines). This effect remained significant when incorporating incorrect trials into the analysis (`r printnum(E1.RT_by_occlusion_in_presence%>%pull(hide_proportion0.05)%>%mean()/1000)` vs `r printnum(E1.RT_by_occlusion_in_presence%>%pull(hide_proportion0.15)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_occlusion_in_presence%>%pull(diff)%>%t.test())$statistic`).
+As expected, hit rate was reduced by occlusion (`r apa_print(E1.hit_rate_by_occlusion$diff%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)C, blue lines), with a mean hit rate of `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.05%>%sd())`) when 5% of the pixels were occluded, versus `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%sd())`) when 15% of the pixels were occluded. Unsurprisingly, occluding more of the target made it more difficult to spot. Furthermore, correct target-present decisions were slowed down by pixel occlusion (pre-registered Hypothesis 2: `r printnum(E1.RT_by_occlusion_in_presence_correct_only%>%pull(hide_proportion0.05)%>%mean()/1000)` seconds for 5% occlusion vs `r printnum(E1.RT_by_occlusion_in_presence_correct_only%>%pull(hide_proportion0.15)%>%mean()/1000)` seconds for 15% occlusion; `r apa_print(E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)B, blue lines). This effect remained significant when incorporating incorrect trials into the analysis (`r printnum(E1.RT_by_occlusion_in_presence%>%pull(hide_proportion0.05)%>%mean()/1000)` vs `r printnum(E1.RT_by_occlusion_in_presence%>%pull(hide_proportion0.15)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_occlusion_in_presence%>%pull(diff)%>%t.test())$statistic`). Unsurprisingly, occluding more of the target made it more difficult to spot.
 
 ```{r H3, echo=FALSE, cache=TRUE}
 E1.RT_by_occlusion_in_absence <- E1.df %>%
@@ -411,7 +793,11 @@ E3.RT_by_occlusion_and_response_correct_only <- merge(
   mutate(interaction = diffpresence-diffabsence);
 ```
 
-Having established that occlusion affected stimulus visibility, making responses both slower and less accurate when a target was present, we next examined the effects of occlusion on detection responses in the absence of a target. If participants were effectively incorporating counterfactual visibility into their criterion placement, we would expect to see an increase in the proportion of false alarms (the proportion of incorrect target-present reports out of all target-absent trials) when more of the target was occluded. This is due to the fact that $p(absence|visibility)$ is a function not only of $p(evidence|absence)$, a quantity that is hardly affected by occlusion (evidence for the presence of a target is expected to be low when a target is absent, regardless of how much of the stimulus is occluded), but also of $p(evidence|presence)$, which *is* affected by occlusion (little evidence is more consistent with target presence when more of the stimulus is occluded; see Fig. \@ref(fig:design)A). In contrast with this Bayesian reasoning, false-alarm rate was unaffected by occlusion (`r apa_print(E1.fa_rate_by_occlusion$diff%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)C, red lines), with a mean false-alarm rate of `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.05%>%mean())` (SD= `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.05%>%sd())`) when 5% of the pixels were occluded, versus `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.15%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%sd())`) when 15% of the pixels were occluded.
+Having established that occlusion affected stimulus visibility, making responses both slower and less accurate when a target was present, we next examined the effects of occlusion on detection responses in the absence of a target. If participants were, like agent $A$, effectively incorporating counterfactual visibility into their criterion placement, we would expect to see an increase in the proportion of false alarms (the proportion of incorrect target-present reports out of all target-absent trials) when more of the target was occluded. If, however, they took evidence at face value like agent $B$, occlusion should be expected to reduce the false alarm rate. In contrast with the predictions of both model variants, false-alarm rate was unaffected by occlusion (`r apa_print(E1.fa_rate_by_occlusion$diff%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)C, red lines), with a mean false-alarm rate of `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.05%>%mean())` (SD= `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.05%>%sd())`) when 5% of the pixels were occluded, versus `r printnum(E1.fa_rate_by_occlusion$hide_proportion0.15%>%mean())` (SD= `r printnum(E1.hit_rate_by_occlusion$hide_proportion0.15%>%sd())`) when 15% of the pixels were occluded.
+
+
+<!-- This is due to the fact that $p(absence|visibility)$ is a function not only of $p(evidence|absence)$, a quantity that is hardly affected by occlusion (evidence for the presence of a target is expected to be low when a target is absent, regardless of how much of the stimulus is occluded), but also of $p(evidence|presence)$, which *is* affected by occlusion (little evidence is more consistent with target presence when more of the stimulus is occluded; see Fig. \@ref(fig:design)A).  -->
+
 
 Furthermore, and in contrast to decisions about presence, the timing of decisions about absence was unaffected by the occlusion manipulation (pre-registered Hypothesis 3: `r printnum(E1.RT_by_occlusion_in_absence_correct_only%>%pull(hide_proportion0.05)%>%mean()/1000)` seconds for 5% occlusion vs `r printnum(E1.RT_by_occlusion_in_absence_correct_only%>%pull(hide_proportion0.15)%>%mean()/1000)` seconds for 15% occlusion; `r apa_print(E1.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)B, red lines). The effect of occlusion on response time was stronger in decisions about target presence compared to decisions about target absence (pre-registered Hypothesis 4: `r apa_print(E1.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`), also when incorporating incorrect responses into the anlaysis (`r apa_print(E1.RT_by_occlusion_and_response%>%pull(interaction)%>%t.test())$statistic`).
 
@@ -421,17 +807,17 @@ Furthermore, and in contrast to decisions about presence, the timing of decision
 knitr::include_graphics("figures/occlusionResults.png")
 ```
 
-Finally, and as expected from the asymmetric effects of occlusion on hit-rate and false-alarms, signal detection sensitivity was significantly reduced by occlusion (pre-registered Hypothesis 5: `r apa_print(E1.descriptives_by_occlusion %>%select(subj_id,hide_proportion,d)%>%spread(hide_proportion,d,sep='')%>%mutate(diff=hide_proportion0.05-hide_proportion0.15)%>%pull(diff)%>%t.test)$statistic`), and so was the signal detection criterion $c$ (pre-registered Hypothesis 6: `r apa_print(E1.descriptives_by_occlusion %>%select(subj_id,hide_proportion,c)%>%spread(hide_proportion,c,sep='')%>%mutate(diff=hide_proportion0.05-hide_proportion0.15)%>%pull(diff)%>%t.test)$statistic`). Together, revealing more of the stimulus rendered participants both more likely and faster to detect a letter when it was there, but it did not make them more likely, or faster, to notice its absence when it was missing. While visibility affected participants' detection responses, counterfactual visibility did not.
+Finally, and as expected from the asymmetric effects of occlusion on hit-rate and false-alarms, signal detection sensitivity was significantly reduced by occlusion (pre-registered Hypothesis 5: `r apa_print(E1.descriptives_by_occlusion %>%select(subj_id,hide_proportion,d)%>%spread(hide_proportion,d,sep='')%>%mutate(diff=hide_proportion0.05-hide_proportion0.15)%>%pull(diff)%>%t.test)$statistic`), and so was the signal detection criterion $c$ (pre-registered Hypothesis 6: `r apa_print(E1.descriptives_by_occlusion %>%select(subj_id,hide_proportion,c)%>%spread(hide_proportion,c,sep='')%>%mutate(diff=hide_proportion0.05-hide_proportion0.15)%>%pull(diff)%>%t.test)$statistic`). Together, revealing more of the stimulus rendered participants both more likely and faster to detect a letter when it was there, but it did not make them more likely, or faster, to notice its absence when it was missing.
 
 ## Experiment 2: row occlusion
 
-In Experiment 1, we found that occlusion affected detection decisions only when a target was present, indicating that only visibility (how much of the target participants actually saw) but not counterfactual visibility (how much of the target participants expected to see but didn't), affected detection decisions. Importantly, in order to incorporate counterfactual visibility into their perception and inference, participants had to distinguish between not seeing the target due to its absence and due to its occlusion. While occluders in Exp. 1 were marked by a different color (black), and by their fixed position relative to the dynamic stimulus, it is possible that participants failed to factor the display into a noisy stimulus behind an array of occluders, and instead perceived them as one stimulus.
+In Experiment 1, we found that occlusion affected detection decisions only when a target was present: a finding that was not predicted by model $A$ that made use of counterfactual visibility or by model $B$ that completely ignored it. Importantly, in order to incorporate counterfactual visibility into their perception and inference, participants had to distinguish between not seeing the target due to its absence and due to its occlusion. While occluders in Exp. 1 were marked by a different color (black), and by their fixed position relative to the dynamic stimulus, it is possible that some participants failed to factor the display into a noisy stimulus behind an array of occluders, and instead perceived them as one stimulus.
 
 In Exp. 2, we made the occluders more clearly separate by displaying them on the screen first, with the stimulus appearing behind them after 500 ms. Occluding entire rows instead of single pixels further allowed us to extend the occluders to both sides of the stimulus, making the separation from the main stimulus even clearer (see Fig. \@ref(fig:design)C). `r E2.raw_df$subj_id%>%unique()%>%length()` participants were recruited for Exp. 2. Based on our [pre-registered exclusion criteria](https://osf.io/5yr9e), we excluded `r E2.to_exclude%>%length()` participants, leaving `r E2.df$subj_id%>%unique()%>%length()` for the main analysis.
 
 Mean accuracy in the main experiment was `r E2.overall_descriptives%>%pull(accuracy)%>%mean()%>%printnum()` (SD=`r E2.overall_descriptives%>%pull(accuracy)%>%sd()%>%printnum()`). As in Exp. 1, response times were significantly shorter in decisions about presence compared to absence (pre-registered hypothesis 1: `r printnum(E2.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E2.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E2.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). Here too, occlusion had the expected negative effects on hit rate (`r printnum(E2.hit_rate_by_occlusion$hide_proportion0.1%>%mean())` versus `r printnum(E2.hit_rate_by_occlusion$hide_proportion0.35%>%mean())` for 2 or 6 occluded rows, respectively; `r apa_print(E2.hit_rate_by_occlusion$diff%>%t.test())$statistic`) and the expected slowing down of accurate target-present responses (pre-registered hypothesis 2: `r printnum(E2.RT_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean()/1000)` vs `r printnum(E2.RT_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean()/1000)` seconds for 2 or 6 occluded rows; `r apa_print(E2.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`).
 
-We next asked whether a clearer separation between the stimulus and the occluders facilitated incorporation of counterfactual visibility into decisions in the absence of a target. Contrary to Exp. 1, in Exp. 2 an effect of occlusion on false-alarm rate did reach statistical significance (`r printnum(E2.fa_rate_by_occlusion$hide_proportion0.1%>%mean())` versus `r printnum(E2.fa_rate_by_occlusion$hide_proportion0.35%>%mean())` for 2 or 6 occluded rows, respectively; `r apa_print(E2.fa_rate_by_occlusion$diff%>%t.test())$statistic`): participants were more likely to accept they might have missed the target when more of the stimulus was occluded. In contrast, and in agreement with Exp. 1, here too the timing of decisions about target absence was unaffected by the occlusion manipulation (pre-registered hypothesis 3: `r printnum(E2.RT_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean()/1000)` vs `r printnum(E2.RT_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean()/1000)` seconds for 2 or 6 occluded rows; `r apa_print(E2.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$statistic`). The effect of occlusion on response times was significantly stronger in target-present compared to target-absent responses (pre-registered Hypothesis 4: `r apa_print(E2.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`), also when incorporating incorrect responses into the analysis (`r apa_print(E2.RT_by_occlusion_and_response%>%pull(interaction)%>%t.test())$statistic`).
+We next asked whether a clearer separation between the stimulus and the occluders facilitated incorporation of counterfactual visibility into decisions in the absence of a target. Contrary to Exp. 1, and in line with the predictions for agent $A$, in Exp. 2 an effect of occlusion on false-alarm rate did reach statistical significance (`r printnum(E2.fa_rate_by_occlusion$hide_proportion0.1%>%mean())` versus `r printnum(E2.fa_rate_by_occlusion$hide_proportion0.35%>%mean())` for 2 or 6 occluded rows, respectively; `r apa_print(E2.fa_rate_by_occlusion$diff%>%t.test())$statistic`): participants were more likely to accept they might have missed the target when more of the stimulus was occluded. In contrast, and in agreement with Exp. 1, here too the timing of decisions about target absence was unaffected by the occlusion manipulation (pre-registered hypothesis 3: `r printnum(E2.RT_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean()/1000)` vs `r printnum(E2.RT_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean()/1000)` seconds for 2 or 6 occluded rows; `r apa_print(E2.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$statistic`). The effect of occlusion on response times was significantly stronger in target-present compared to target-absent responses (pre-registered Hypothesis 4: `r apa_print(E2.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`), also when incorporating incorrect responses into the analysis (`r apa_print(E2.RT_by_occlusion_and_response%>%pull(interaction)%>%t.test())$statistic`).
 
 As in Exp. 1, signal detection sensitivity was significantly reduced by occlusion (pre-registered Hypothesis 5: `r apa_print(E2.descriptives_by_occlusion %>%select(subj_id,hide_proportion,d)%>%spread(hide_proportion,d,sep='')%>%mutate(diff=hide_proportion0.1-hide_proportion0.35)%>%pull(diff)%>%t.test)$statistic`), and so was the signal detection criterion $c$ (pre-registered Hypothesis 6: `r apa_print(E2.descriptives_by_occlusion %>%select(subj_id,hide_proportion,c)%>%spread(hide_proportion,c,sep='')%>%mutate(diff=hide_proportion0.1-hide_proportion0.35)%>%pull(diff)%>%t.test)$statistic`)
 
@@ -601,7 +987,7 @@ E2.AUC_control <- E2.AUC %>%
             mutate(metacognitive_asymmetry_control = metacognitive_asymmetry-metacognitive_asymmetry_from_sdt)
 ```
 
-Finally, in order to measure metacognitive insight into the effects of occlusion on perception, participants reported their subjective level of confidence in their perceptual decisions in blocks 3 and 4 of the task. Consistent with the confidence profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical], confidence was higher in decisions about presence compared to absence (pre-registered hypothesis 7: `r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$statistic`). As expected, confidence in presence was lower when more of the display was occluded (pre-registered hypothesis 8: `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean())` on a 0-1 scale; `r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$statistic`). Critically, the same was true of confidence in absence (pre-registered hypothesis 9: `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean())`; `r apa_print(E2.confidence_by_occlusion_in_absence_correct_only$diff%>%t.test())$statistic`), with no significant interaction between occlusion and target presence on confidence (pre-registered hypothesis 10: `r apa_print(E2.confidence_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)D). Together, unlike reaction times, which were solely affected by visibility, subjective confidence ratings were affected by both visibility and beliefs about the effects of occlusion on visibility: participants were less confident in the absence of a target when it would have been harder to see.
+Finally, in order to measure metacognitive insight into the effects of occlusion on perception, participants reported their subjective level of confidence in their perceptual decisions in blocks 3 and 4 of the task. Consistent with the confidence profile of detection tasks [@mazor2021inference; @mazor2022efficient; @mazor2023paradoxical] and with the predictions of the asymmetric model, confidence was higher in decisions about presence compared to absence (pre-registered hypothesis 7: `r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$statistic`). As expected, confidence in presence was lower when more of the display was occluded (pre-registered hypothesis 8: `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean())` on a 0-1 scale; `r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$statistic`). Critically, the same was true of confidence in absence (pre-registered hypothesis 9: `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_absence_correct_only$hide_proportion0.1%>%mean())`; `r apa_print(E2.confidence_by_occlusion_in_absence_correct_only$diff%>%t.test())$statistic`), with no significant interaction between occlusion and target presence on confidence (pre-registered hypothesis 10: `r apa_print(E2.confidence_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)D). Together, unlike reaction times, which were solely affected by visibility, subjective confidence ratings were affected by both visibility and beliefs about the effects of occlusion on visibility: participants were less confident in the absence of a target when it would have been harder to see.
 
 ## Experiment 3: providing visual access to the counterfactual
 
