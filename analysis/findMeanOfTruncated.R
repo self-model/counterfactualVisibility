@@ -5,7 +5,7 @@ sd = 0.05
 
 get_mean <- function(x,mu,sd) {
   density=dnorm(x,mean=mu,sd=sd)
-  return(sum(x*density)/sum(density))
+  return((sum(x*density)/sum(density))/2)
 }
 
 # fit mean given sd
@@ -18,7 +18,7 @@ df%>%ungroup%>%slice(which.min(diff))
 
 
 #fit sd given mean=0
-df <- data.frame(guess = seq(0.001,0.05,0.0001))%>%
+df <- data.frame(guess = seq(0.001,0.1,0.0001))%>%
   rowwise()%>%
   mutate(mean = get_mean(x,0,guess),
          diff=abs(mean-0.03))
