@@ -22,7 +22,7 @@ for s = 1:10
     objective = @(params) get_neg_likelihood(params, subj_data,T);
 
 % Initial guess for the parameters
-initialParams = [0.05, 0.15, 0.05, 0.15, 0.5, 1.2, -0.5, -0.5]; % Example values, adjust as necessary
+initialParams = [0.2, 0.4, 0.2, 0.4, 0.99, 1.2, 0, 0]; % Example values, adjust as necessary
 
 % Define bounds for the parameters (if necessary)
 lb = [0.001, 0.001, 0.001, 0.001, 0, 0, -2, -2]; % Lower bounds
@@ -37,10 +37,13 @@ A = []; b = []; Aeq = []; beq = [];
 nonlcon = [];
 
 % Optimization options, for example, to display iteration output
-options = optimoptions('simulannealbnd','Display', 'iter', 'InitialTemperature',500, 'TemperatureFcn','temperatureboltz','PlotFcns',...
-          {@saplotbestx,@saplotbestf,@saplotx,@saplotf});
+options = optimoptions('fmincon', 'Display', 'iter-detailed', 'OutputFcn',...
+    @outfun, 'Algorithm', 'interior-point', 'ScaleProblem',true,...
+    'OptimalityTolerance', 1e-2, 'FunctionTolerance', 1e-6);
 
 % Call fmincon
-[optimizedParams, fval] = simulannealbnd(objective, initialParams, lb, ub, options)
+[optimizedParams, fval] = fmincon(objective, initialParams, A, b, Aeq, beq, lb, ub, nonlcon, options);
 
+% optimizedParams contains the parameters that minimize the negative log likelihood
+% fval is the value of the objective function at the solution
 end

@@ -1,5 +1,5 @@
 T = 1000;
-df = readtable('../data/E2a.csv');
+df = readtable('data/E2a.csv');
 df.present(df.present==-1) =0;
 df.decision = double((df.correct == 1 & df.present == 1) | (df.correct == 0 & df.present == 0));
 df.rt = round(df.rt / 0.05);
