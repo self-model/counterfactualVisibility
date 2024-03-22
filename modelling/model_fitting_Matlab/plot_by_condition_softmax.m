@@ -1,9 +1,18 @@
-function plot_by_condition(params, data, dt, T)
+function plot_by_condition_softmax(params, data, dt, T)
     % Assuming get_model_predictions_ndt is a function that returns predictions
-    % for high and low occlusion based on the parameters provided.
+    % for high and low occlusion based on the parameters provided
+
+    % %apply the sigmoid function to the thetas and gamma
+    params(1:5) = 1./(1+exp(-10.*params(1:5)));
+
+    %multiply temp by 10
+    params(10) = params(10)*10;
+
+    % %apply the exponent to alpha and temp
+    params(8:10) =exp(params(8:10));
 
     % HIGH OCCLUSION
-    predictions_high = get_model_predictions_ndt(params(1:2).*exp(params(8)), params(3:4).*exp(params(9)), params(5), params(6), params(7), dt, T);
+    predictions_high = get_model_predictions_softmax([params(1), params(2)+params(1)]*params(8), [params(3), params(4)+params(3)]*params(9), params(5), params(6), params(7), params(10), dt, T);
     figure;
     high_counts = squeeze(data(1,:,:,:));
     high_counts=high_counts/sum(high_counts(:));
@@ -33,7 +42,7 @@ function plot_by_condition(params, data, dt, T)
     sgtitle('High Occlusion'); % Super title for the figure
 
     % LOW OCCLUSION
-    predictions_low = get_model_predictions_ndt(params(1:2), params(3:4), params(5), params(6),params(7),dt, T);
+    predictions_low = get_model_predictions_softmax([params(1), params(2)+params(1)]/params(8), [params(3), params(4)+params(3)]/params(9), params(5), params(6), params(7), params(10), dt, T);
     predictions_low=predictions_low/sum(predictions_low(:));
     low_counts = squeeze(data(2,:,:,:));
     low_counts = low_counts/sum(low_counts(:));

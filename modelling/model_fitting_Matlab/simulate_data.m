@@ -7,8 +7,8 @@ function simulated_data = simulate_data(true_thetas, believed_thetas, gamma, min
     % ndt_range: maxmimal ndt minus minimal_ndt
     % dt: s per time point
     % ntrials: number of trials to simulate in each cell
+
     
-    gamma = 1/(1+exp(-10*gamma));
     % 1. FIND POLICY
     V = nan(T*2+1, T*2+1); % Value
     A = nan(T*2+1, T*2+1); % Action
