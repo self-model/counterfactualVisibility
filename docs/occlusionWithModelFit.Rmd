@@ -54,13 +54,13 @@ After checking Taylor Swift's Wikipedia page, we are confident that she hasn't a
 
 More generally, inferences about the negation of a hypothesis ($H$) depend not only on the absence of evidence for $H$ ($E$) and our prior belief that the hypothesis is true ($p(H)$), but also on our internal model of how likely evidence is to ever become available, even when $H$ holds. Specifically, sound inference that $H$ is false based on the absence of evidence for $H$ requires that evidence for $H$ is unlikely to become available if H is false, but more critically, it requires that that evidence for $H$ is likely to become available if $H$ is true [@walton1992nonfallacious; @walton2010arguments; @oaksford2004bayesian]. In other words, we believe that something is not true (for example, that Taylor Swift hasn’t announced her retirement from music) when we believe that “if it were true, we would have heard about it” [@goldberg2011if].
 
-Here we examine whether people apply a similar reasoning in the domain of visual perception, and specifically in perceptual decisions about the absence of stimuli. Namely, we ask if absence is inferred when 1) a stimulus is not visible ($¬perceived$), and 2) it is likely that it would have been visible if it were present ($p(perceived|present)$ is sufficiently high). If this is the case, detection decisions in the absence of a stimulus, their biases, timing, and confidence, should depend not on the visibility of the absence of stimuli, but on *counterfactual visibility*: beliefs about the visibility, that is, the probability of being perceived, of stimuli that are not in fact present.
+Here we examine whether people apply a similar reasoning in the domain of visual perception, and specifically in perceptual decisions about the absence of stimuli. Namely, we ask how absence is inferred when 1) a stimulus is not visible ($¬perceived$), and 2) it is likely that it would have been visible if it were present ($p(perceived|present)$ is sufficiently high). When this is the case, detection decisions should depend not on the visibility of the absence of stimuli, but on *counterfactual visibility*: beliefs about the visibility, that is, the probability of being perceived, of stimuli that are not in fact present.
 
-We contrast this possibility with two alternatives. First, it may be that the absence of stimuli can be directly perceived just like their presence. For example, it has been suggested that sensory neurons typically have corresponding “anti-neurons” with opposite selectivity [@gold2001; @shadlen2001; @newsome1989], rendering it possible to make perceptual inferences in a purely feed-forward manner, by extracting the difference in activation between neurons and their anti-neurons as perceptual evidence. @gold2001 suggest that in the case of perceptual detection, anti-neurons may selectively discharge in response to target absence, making it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by neurons that are sensitive to the physical correlates of absent-ness.
+We contrast this possibility with two alternatives. First, it may be that the absence of stimuli can be directly perceived just like their presence. For example, it has been suggested that sensory neurons typically have corresponding “anti-neurons” with opposite selectivity [@gold2001; @gold2002; @newsome1989], rendering it possible to make perceptual inferences in a purely feed-forward manner, by extracting the difference in activation between neurons and their anti-neurons as perceptual evidence. @gold2001 suggest that in the case of perceptual detection, anti-neurons may selectively discharge in response to target absence, making it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by neurons that are sensitive to the physical correlates of absent-ness.
 
 A second alternative is that decisions are made relative to an internal criterion which is set based on beliefs about the probability of stimuli, the payoff structure, and recent history, but not the expected likelihood of evidence. In support of this view, participants often fail to adjust their decision heuristic based on expected stimulus visibility, both when visibility is cued [@gorea2000failure] and when it is manipulated via attention [@rahnev2011] or stimulus centrality on the retina [@solovey2015]. Together, it is unclear whether beliefs about counterfactual visibility ever contribute to perceptantiual decisions outside visual search, and if they do, in what ways.
 
-In what follows, we first introduce our task, where decisions about presence and absence were taken under different levels of stimulus occlusion. This partial occlusion manipulation, together with random fluctuations in stimulus noise, allowed us to experimentally dissociate visibility from counterfactual visibility, independently measuring the effects of each on perceptual decisions and confidence in presence and absence. We then contrast three computational accounts for the inferential processes that may underlie behaviour in this task, and in perceptual detection more generally. We show that behavioural patterns in perceptual detection naturally emerge in an ideal observer model when only presence, but not absence, is positively represented in sensory channels. Using the same ideal-observer model, we show that detection decisions in the absence of a stimulus, their biases, timing, and confidence, are critically dependent on counterfactual visibility: beliefs about the expected visibility of stimuli that are not physically present. Finally, we provide evidence for reliable population heterogeneity in the incorporation of counterfactual visibility into perceptual decisions, with some participants systematically making use of counterfactuals more than others.
+In what follows, we first introduce our task, where decisions about presence and absence were taken under different levels of stimulus occlusion. This partial occlusion manipulation, together with random fluctuations in stimulus noise, allowed us to experimentally dissociate visibility from counterfactual visibility, independently measuring the effects of each on perceptual decisions and confidence in presence and absence. We then contrast three computational accounts for the inferential processes that may underlie behaviour in this task, and in perceptual detection more generally. We show that behavioural patterns in perceptual detection naturally emerge in an ideal observer model when only presence, but not absence, is positively represented in sensory channels. Using the same ideal-observer model, we show that detection decisions in the absence of a stimulus, their biases, timing, and confidence, are critically dependent on counterfactual visibility: beliefs about the expected visibility of stimuli that are not physically present. Finally, we provide evidence for reliable population heterogeneity in the incorporation of counterfactual visibility into perceptual decisions.
 
 ```{r setup, include = FALSE}
 
@@ -81,7 +81,8 @@ groundhog.library(
     'afex', #for anova
     'pracma', # for AUCs
     'cocor', # for correlation comparisons
-    'formattable' # for table formatting
+    'formattable', # for table formatting
+    'modelsummary' # for modelplot
   ), "2023-12-01"
 )
 
@@ -101,6 +102,8 @@ source("../analysis/loadAndPreprocessData.R")
 source("../analysis/loadAndPreprocessParametersAndSimulatedData.R")
 source("../analysis/loadAndPreprocessParametersAndSimulatedDataFullInsight.R")
 source("../analysis/loadAndPreprocessParametersAndSimulatedDataNoInsight.R")
+source("../analysis/loadAndPreprocessParametersAndSimulatedDataVariableTrials.R")
+
 ```
 
 ```{r SDT, echo=FALSE, cache=TRUE}
@@ -245,9 +248,11 @@ In three pre-registered online experiments, participants performed a near-thresh
 
 More specifically, `r E1.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 1, in which either 5 or 15 percent of the stimulus pixels were occluded by a static layer of randomly positioned black pixels (Fig. \@ref(fig:design)D, left panels). `r E2.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 2, in which we occluded 2 or 6 entire rows of pixels, and presented the occluders for additional 500 ms before stimulus onset, to facilitate a separation between the occluders and the noisy stimulus itself (Fig. \@ref(fig:design)D, middle panels). Exp. 2 was the only experiment in which participants also reported their confidence ratings on an analog scale in blocks 3 and 4 (Fig. \@ref(fig:design)C). Finally, `r E3.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 3, in which the central stimulus was flanked by two stimuli, partly hidden behind the same row occluders, which, known to participants, always had the target in them (Fig. \@ref(fig:design)D, left panels). The rationale for this manipulation was to increase the availability of counterfactual visibility ("what would it look like if the stimulus had been present?") in target-absent trials.
 
-After applying our pre-registered accuracy and reaction-time based exclusion criteria, `r E1.raw_df$subj_id%>%unique()%>%length()`, `r E2.raw_df$subj_id%>%unique()%>%length()`, and `r E3.raw_df$subj_id%>%unique()%>%length()` participants were included in the main analysis for Experiments 1, 2, and 3, respectively. With those participants excluded, mean detection accuracy was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 1, `r E2.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E2.overall_descriptives%>%pull(accuracy)%>%sd()`), and `r E3.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E3.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 3.
+After applying our pre-registered accuracy and reaction-time based exclusion criteria, `r E1.raw_df$subj_id%>%unique()%>%length()`, `r E2.raw_df$subj_id%>%unique()%>%length()`, and `r E3.raw_df$subj_id%>%unique()%>%length()` participants were included in the main analysis for Experiments 1, 2, and 3, respectively. With those participants excluded, mean detection accuracy was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 1, `r E2.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E2.overall_descriptives%>%pull(accuracy)%>%sd()`), and `r E3.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E3.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 3. 
 
-```{r design, echo=FALSE, fig.cap="Rationale and experimental design for Experiments 1-3. A) example frames from target-present (blue) and target-absent (red) trials. B) occluding more of a target letter decreases its visibility (black markers). Occlusion has no effect on target visibility when the target is absent, but it affects *counterfactual visibility* (white markers): the expected visibility of the target, had it been present. C) trial structure in Exp. 2. D) occlusion conditions in the three experiments. In Exp. 1, on different trials we occluded a random subset of 5% or 15% of the pixels in the stimulus. In Exp. 2 and 3, on different trials we occluded a random subset of 2 or 6 pixel rows. In Exp. 3, the task-relevant stimulus was falnked by two reference stimuli that, known to the subject, always had the target letter in them. Participants performed two 32-trial blocks in which the target was the letter S and two blocks in which the target was the letter A. The order of the two letters was randomised between participants.   *The occluder preview screen only appeared in Exp. 2 and 3. **Confidence ratings were given only in Exp. 2, blocks 3 and 4", out.width = '75%'}
+Results from all pre-registered analyses are presented in the Appendix.
+
+```{r design, echo=FALSE, fig.cap="Rationale and experimental design for Experiments 1-3. A) example frames from target-present (blue) and target-absent (red) trials. B) occluding more of a target letter decreases its visibility (black markers). Occlusion has no effect on target visibility when the target is absent, but it affects *counterfactual visibility* (white markers): the expected visibility of the target, had it been present. C) trial structure in Exp. 2. D) occlusion conditions in the three experiments. In Exp. 1, on different trials we occluded a random subset of 5% or 15% of the pixels in the stimulus. In Exp. 2 and 3, on different trials we occluded a random subset of 2 or 6 pixel rows. In Exp. 3, the task-relevant stimulus was flanked by two reference stimuli that, known to the subject, always had the target letter in them. Participants performed two 32-trial blocks in which the target was the letter S and two blocks in which the target was the letter A. The order of the two letters was randomised between participants.   *The occluder preview screen only appeared in Exp. 2 and 3. **Confidence ratings were given only in Exp. 2, blocks 3 and 4", out.width = '75%'}
 knitr::include_graphics("figures/design_occlusion_noisy_stim.png")
 ```
 
@@ -680,7 +685,9 @@ Confidence ratings in Exp. 2 further allowed us to test the relationship between
 
 ## Modeling occlusion effects
 
-In light of these marked presence-absence asymmetries in reaction times, confidence ratings, and evidence weighting, we proceed with the asymmetric model, assuming that absence is not explicitly coded in sensory channels. We simulate stimulus occlusion as a scaling of the probability of sensor activation by a parameter $\alpha\in[0,1]$, such that $p(1│\theta,\alpha)=\alpha\theta$. This way, $\alpha$ can be thought of as modulating the visibility of target-like patterns, with lower levels making the sensor less likely to activate (Fig. \@ref(fig:model-occlusion)A). Importantly, in addition to the effects of $\alpha$ on stimulus visibility, beliefs about $\alpha$ (denoted $\bar\alpha$) also affect how sensory input is interpreted, and how much certainty agents seek before they commit to a decision. Fig. \@ref(fig:model)B illustrates the interpretation of the same sensory samples when the agent believes $\alpha$ to be $0.8$ (corresponding to low occlusion, in black) or $0.6$ (corresponding to high occlusion, in gray). Notably, the information value of sensor inactivation is diminished when $\bar\alpha=0.6$, making the same ambiguous sequence of samples appear more consistent with target presence if the display is known to be occluded. 
+In light of these marked presence-absence asymmetries in reaction times, confidence ratings, and evidence weighting, we proceed with the asymmetric model, assuming that absence is not explicitly coded in sensory channels. We simulate stimulus occlusion as a scaling of the probability of sensor activation by a parameter $\alpha\in[0,1]$, such that $p(1│\theta,\alpha)=\alpha\theta$. This way, $\alpha$ can be thought of as modulating the visibility of target-like patterns, with lower levels making the sensor less likely to activate (Fig. \@ref(fig:model-occlusion)A). Importantly, in addition to the effects of $\alpha$ on stimulus visibility, beliefs about $\alpha$ (denoted $\bar\alpha$) also affect how sensory input is interpreted, and how much certainty agents seek before they commit to a decision. Fig. \@ref(fig:model)B illustrates the interpretation of the same sensory samples when the agent believes $\alpha$ to be $0.8$ (corresponding to low occlusion, in black) or $0.6$ (corresponding to high occlusion, in gray). Notably, the information value of sensor inactivation, but not sensor activation, is diminished when $\bar\alpha=0.6$, making the same ambiguous sequence of samples appear more consistent with target presence if the display is known to be occluded.
+
+Together, occlusion affects the probability of obtaining positive evidence, but beliefs about occlusion have no effect on the interpretation of such evidence once obtained. On the other hand, occlusion has little effect on the probability of obtaining negative evidence (in the form of sensor inactivation), but beliefs about the effects of occlusion affect the interpretation of such evidence once obtained. As a result, timing and confidence in the absence of a target depend much more on beliefs about the effect of occlusion than on the true effect of occlusion on visibility.
 
 To exemplify the dissociable contributions of visibility itself ($\alpha$) and beliefs about visibility ($\bar\alpha$) to behaviour, we consider two variants of the model (Fig. \@ref(fig:model-occlusion)B). Variant $V_{INCORP}$ incorporates into its perceptual decisions fully accurate beliefs about the effect of $\alpha$ on stimulus visibility. This affects both the interpretation stage (when $\alpha$ is believed to be low, sensor inactivation, but not sensor activation, becomes less informative) and the action selection stage (by affecting the expected value of future evidence, making the agent more willing to settle for lower decision confidence when occlusion is high). Variant $V_{IGNORE}$, on the other hand, entirely ignores the expected effects of $\alpha$ on the probability of sensor activation, interpreting evidence in the same way in both high-occlusion and low-occlusion trials. For this variant, occlusion affects perception only to the extent that it affects the activation of sensors, but not in how these activations are interpreted or accumulated over time. The two variants represent two points in the space of possible values $\bar\alpha$ can take relative to $\alpha$: observers may incorporate beliefs about occlusion only on some trials, underestimate the effect of occlusion on visibility to different degrees, or overestimate it.
 
@@ -1243,10 +1250,10 @@ E2.AUC_control <- E2.AUC %>%
 
 Participants were also slower to correctly detect targets when more of the display was occluded, with a mean difference of `r E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%mean()%>%round()%>%abs()` ms in Exp. 1 (pre-registered hypothesis 2, `r apa_print(E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`), `r E2.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%mean()%>%round()%>%abs()` ms in Exp. 2 (`r apa_print(E2.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`) , and `r  E3.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%mean()%>%round()%>%abs()` ms in Exp. 3 (`r apa_print(E3.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$statistic`; see Fig. \@ref(fig:main-results)B, blue lines). In all three experiments, this effect remained significant when incorporating incorrect trials into the analysis. Finally, in Exp. 2, confidence in presence was lower when more of the display was occluded (pre-registered hypothesis 8: `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.35%>%mean())` vs. `r printnum(E2.confidence_by_occlusion_in_presence_correct_only$hide_proportion0.1%>%mean())` on a 0.5-1 scale; `r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$statistic`; ; see Fig. \@ref(fig:main-results)C, blue line). Unsurprisingly, occluding more of the target made it more difficult to spot.
 
-(ref:main-results) Main results from Experiments 1-3. A) miss and false alarm rates as a function of occlusion level. B) mean median reaction times in target-present and target-absent correct responses, as a function of occlusion level. C) mean confidence in target-present and target-absent correct responses, as a function of occlusion level. Error bars represent the standard error. \*: p\<0.05, \*\*: p\<0.01, \*\*\*: p\<0.001
+(ref:main-results) Main results from Experiments 1-3. A) miss and false alarm rates as a function of occlusion level. B) mean median reaction times in target-present and target-absent correct responses, as a function of occlusion level. C) mean confidence in target-present and target-absent correct responses, as a function of occlusion level. Error bars represent the standard error. Semi-transparent rectangles represent data simulated from the asymmetric model, fitted to the teh accuracy and reaction time data of individual participants (see model-fitting section). \*: p\<0.05, \*\*: p\<0.01, \*\*\*: p\<0.001
 
 ```{r main-results, echo=FALSE, fig.cap="(ref:main-results)"}
-knitr::include_graphics("figures/results_one_panel.png")
+knitr::include_graphics("figures/model_results_one_panel_wo_jitter.png")
 ```
 
 ### Target-absent trials
@@ -1583,7 +1590,7 @@ Finally, the two model variants made opposite predictions for the effect of occl
 
 Occlusion affected the false-alarm rate and subjective confidence in a way that is consistent with the incorporation of counterfactual visibility into inferences about absence, but the absence of an effect on decision time was inconsistent with both models: model $V_{incorp}$ predicted a positive effect, and model $V_{ignore}$ a negative one. We considered the possibility that this null group-level result may reflect population variability in the incorporation of beliefs about visibility into perceptual decisions, with some behaving more in line with the prediction of model $V_{incorp}$, incorporating counterfactual visibility into their perceptual decisions about absence and slowing down when more of the display is occluded, and others more in line with the predictions of model $V_{ignore}$, underestimating the effect of occlusion on stimulus visibility or ignoring it altogether, resulting in speedier decisions about absence for more occluded displays.
 
-This population-mixture model predicts that despite a group-level null effect, individual participants should show reliable effects of occlusion on “target absent” reaction times: negative for some participants, and positive for others. To test this prediction, we collected a large number of test trials from a subset of participants who took part in Exp. 2 and 3 (see Fig. \@ref(fig:sc-results)B). We contacted all participants who had accuracy of 70% or higher, and who did not require more than one iteration over the instructions before passing the comprehension check. The first 10 participants from each study to accept our invitation were invited to take part in 5 20-minute experiments, which they could complete in their own free time. Over the course of these sessions we collected 896 trials per participant, with the exception of two participants in Exp. 3 for which we have 672 and 864 trials.
+This population-mixture model predicts that despite a group-level null effect, some individual participants should show reliable effects of occlusion on “target absent” reaction times: negative for some participants, and positive for others. To test this prediction, we collected a large number of test trials from a subset of participants who took part in Exp. 2 and 3 (see Fig. \@ref(fig:sc-results)B). We contacted all participants who had accuracy of 70% or higher, and who did not require more than one iteration over the instructions before passing the comprehension check. The first 10 participants from each study to accept our invitation were invited to take part in 5 20-minute experiments, which they could complete in their own free time. Over the course of these sessions we collected 896 trials per participant, with the exception of two participants in Exp. 3 for which we have 672 and 864 trials.
 
 The high number of trials per participant allowed us to quantify the consistency of the effect of occlusion on target-absent RTs within individual participants. For each participant, we compared their target-absent response times in high- and low- occlusion trials with a t-test. If decision times were invariant to the effect of stimulus occlusion, this would be expected to result in a significant test statistic in 1 out of 20 participants, on average, corresponding to our significance level of 0.05. Strikingly, however, out of 20 participants the effect of occlusion on “target absent” decision times was significant in 8, split exactly half-half between significant positive effects (more consistent with model variant $V_{incorp}$) and significant negative effects (more consistent with model variant $V_ignore$): much higher than the 1/20 probability expected by chance alone ($p<0.001$ in a binomial test against $p=0.05$).
 
@@ -1825,11 +1832,7 @@ longExps.correlation_matrix <- E2a.df %>%
 
 In order to map this behavioural variability onto the model parameter space, we fitted model parameters to the response and response time data of participants (see Methods for details about the model fit procedure and parameter recovery results). Of note, model fits were free to independently vary in the physical visibility of stimuli (parameters $\theta$ and $\alpha$ ) and in participants’ expectations regarding these quantities (parameters $\bar\theta$ and $\bar\alpha$).
 
-<!-- As shown in Fig. X, the model captures key aspects in the data, including the pattern of errors and response times in decisions about presence and absence, and the group-level effect of occlusion. Note that the model captures the overall bias to report absence (X of all responses) although the prior probability of target absence is assumed to be known to be 0.5, and the incentive structure is fully symmetric with respect to false alarms and misses. A response bias emerges due to asymmetries in the likelihood function, and the different informational value of evidence for presence versus absence.  -->
-
-As shown in Fig. \@ref(fig:fit)A and E, the model captures key aspects in the data, including the pattern of errors and response times in decisions about presence and absence, and the group-level effect of occlusion. To reduce the number of free model parameters, the presented model makes the simplifying assumption that, conditioned on the level of occlusion, all trials share the same visibility level. Relaxing this assumption allows the model to account for the difference in response times between correct and incorrect responses as well (see Appendix). Note that the model captures the overall bias to report absence in Exp. 2 (`r E2.sim.df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean()%>%printnum()` of all observed and simulated responses) and the overall bias to report presence in Exp. 3 (`r E3.sim.df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean()%>%printnum()` of all simulated responses, `r E3.minimal_df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean()%>%printnum()` of all observed responses) although the prior probability of target absence is assumed to be known to be 0.5 in both experiments, and the incentive structure is fully symmetric with respect to false alarms and misses. A response bias emerges due to asymmetries in the likelihood function, and the different informational value of evidence for presence versus absence.
-
-Inspecting the fitted model parameters revealed that overall, $alpha$ and $\bar\alpha$ were correlated across individuals (Exp. 1: `r apa_print(cor.test(E1_parameters$alpha,E1_parameters$belalpha))$estimate`; Exp. 2: `r apa_print(cor.test(E2_parameters$alpha,E2_parameters$belalpha))$estimate`; Exp. 3: `r apa_print(cor.test(E3_parameters$alpha,E3_parameters$belalpha))$estimate`), meaning participants' beliefs about the effects of occlusion on visibility were proportional to the true effect occlusion had on stimulus visibility. Importantly, despite this strong alignment, participants had an overall tendency to act in accordance with a belief that occlusion affected visibility to a lesser degree than its true effect (Exp. 1: `r apa_print(t.test(E1_parameters$belalpha-E1_parameters$alpha))$statistic`; Exp. 2: `r apa_print(t.test(E2_parameters$belalpha-E2_parameters$alpha))$statistic`; Exp. 3: `r apa_print(t.test(E3_parameters$belalpha-E3_parameters$alpha))$statistic`). While occlusion had a similar effect on $\alpha$ in Exp. 2 and 3 (`r apa_print(t.test(E2_parameters$alpha,E3_parameters$alpha))$statistic`), the added reference stimuli in Exp. 3 affected $\bar\alpha$, bringing it closer to $\alpha$ itself (a contrast between $|\alpha-\bar\alpha|$ in Exp. 2 and 3: `r apa_print(t.test(abs(E2_parameters$alpha-E2_parameters$belalpha),abs(E3_parameters$alpha-E3_parameters$belalpha)))$statistic`). This is in line with the theoretical interpretation of these two model parameters as being based in the true and believed effects of occlusion on visibility, respectively.
+As shown in Fig. \@ref(fig:main-results) (semi-transparent rectangles), the model captures key aspects in the data, including the difference in reaction times as a function of target presence or absence, the increase in "target present" reaction times as a function of occlusion, and the invariance of "target absent" reaction times to occlusion. The model captures the overall bias to report absence in Exp. 2 (`r (1-E2.sim.df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean())%>%printnum()` of all observed and simulated responses) and the overall bias to report presence in Exp. 3 (`r E3.sim.df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean()%>%printnum()` of all simulated responses, `r E3.minimal_df%>%mutate(resp=ifelse(present=='present',correct,1-correct))%>%group_by(subj_id)%>%summarise(bias=mean(resp))%>%pull(bias)%>%mean()%>%printnum()` of all observed responses) although the prior probability of target absence is assumed to be known to be 0.5 in both experiments, and the incentive structure is fully symmetric with respect to false alarms and misses. A response bias emerges due to asymmetries in the likelihood function, and the different informational value of evidence for presence versus absence. Three important exceptions are the model's failure to account for the effect of occlusion on the false alarm rates in Exp. 2 and 3 and the effect of response accuracy on reaction times, and an underestimation of the difference in response times between 'target present' and 'target absent' responses. We return to these limitations in the Discussion.
 
 ```{r correlations with simulated data, echo=FALSE, cache=TRUE}
 
@@ -1838,43 +1841,44 @@ plot_rt_correlation <- function(human_df, sim_df, fi_df, ni_df, exp_number) {
   rta_df <- human_df %>% 
     filter(present=='absent' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(human = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])) %>%
+    summarise(human = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])) %>%
     merge(sim_df %>% 
     filter(present=='absent' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(sim = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id') %>%
+    summarise(sim = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id') %>%
     merge(fi_df %>% 
     filter(present=='absent' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(fi = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id')%>%
+    summarise(fi = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id')%>%
     merge(ni_df %>% 
     filter(present=='absent' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(ni = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id')
+    summarise(ni = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id')
   
   rtp_df <- human_df %>% 
     filter(present=='present' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(human = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])) %>%
+    summarise(human = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])) %>%
     merge(sim_df %>% 
     filter(present=='present' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(sim = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id') %>%
+    summarise(sim = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id') %>%
     merge(fi_df %>% 
     filter(present=='present' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(fi = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id')%>%
+    summarise(fi = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id')%>%
     merge(ni_df %>% 
     filter(present=='present' & correct==1) %>%
     group_by(subj_id) %>%
-    summarise(ni = mean(rt[occlusion_is_low==0])-mean(rt[occlusion_is_low==1])), by='subj_id')
+    summarise(ni = median(rt[occlusion_is_low==0])-median(rt[occlusion_is_low==1])), by='subj_id')
+  
   
   rta_df %>% 
     ggplot(aes(x=human,y=sim)) +
     geom_abline(slope=1,intercept=0, alpha=0.3) +
     geom_hline(yintercept=0, alpha=0.15)+
     geom_vline(xintercept=0, alpha=0.15)+
-    geom_point(color=detection_colors[2], alpha=0.2) +
+    geom_point(color='black', alpha=0.05,size=1) +
     theme_classic() +
     theme(aspect.ratio=1)+
     coord_fixed()+
@@ -1882,19 +1886,19 @@ plot_rt_correlation <- function(human_df, sim_df, fi_df, ni_df, exp_number) {
     scale_y_continuous(limits = c(floor(min(rta_df$human,rta_df$sim)*5)/5,ceil(max(rta_df$human,rta_df$sim)*5)/5))+
     labs(x='observed target-absent RT effect (sec)',
          y='recovered target-absent RT effect (sec)')+
-    geom_smooth(method='lm', alpha=0.3, color=detection_colors[2], fill=detection_colors[2])+
-    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='black', fill='black') +
-    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='brown', fill='brown') 
+    geom_smooth(method='lm', alpha=0.3, color='black', fill='black')+
+    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='#5bb044', fill='#5bb044', linetype=2) +
+    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='#8f4f9a', fill='#8f4f9a', linetype=3) 
 
   
   ggsave(paste('../docs/figures/MLE_parameter_simulations/basic_model/RT/recovery/effect_recovery_rta',exp_number,'.png',sep=''), width=3.2,height=3.2, dpi=600)
   
   rtp_df %>% 
-    ggplot(aes(x=human,y=sim)) +
+      ggplot(aes(x=human,y=sim)) +
     geom_abline(slope=1,intercept=0, alpha=0.3) +
     geom_hline(yintercept=0, alpha=0.15)+
     geom_vline(xintercept=0, alpha=0.15)+
-    geom_point(color=detection_colors[1], alpha=0.2) +
+    geom_point(color='black', alpha=0.05,size=1) +
     theme_classic() +
     theme(aspect.ratio=1)+
     coord_fixed()+
@@ -1902,9 +1906,9 @@ plot_rt_correlation <- function(human_df, sim_df, fi_df, ni_df, exp_number) {
     scale_y_continuous(limits = c(floor(min(rtp_df$human,rtp_df$sim)*5)/5,ceil(max(rtp_df$human,rtp_df$sim)*5)/5))+
     labs(x='observed target-present RT effect (sec)',
          y='recovered target-present RT effect (sec)')+
-    geom_smooth(method='lm', alpha=0.3, color=detection_colors[1], fill=detection_colors[1])+
-    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='black', fill='black')+
-    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='brown', fill='brown') 
+    geom_smooth(method='lm', alpha=0.3, color='black', fill='black')+
+    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='#5bb044', fill='#5bb044', linetype=2) +
+    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='#8f4f9a', fill='#8f4f9a', linetype=3) 
   
   ggsave(paste('../docs/figures/MLE_parameter_simulations/basic_model/RT/recovery/effect_recovery_rtp',exp_number,'.png',sep=''), width=3.2,height=3.2, dpi=600)
   
@@ -1955,44 +1959,41 @@ plot_error_correlation <- function(human_df, sim_df, fi_df, ni_df, exp_number) {
     group_by(subj_id) %>%
     summarise(ni = mean(correct[occlusion_is_low==1])-mean(correct[occlusion_is_low==0])))
   
+  errorp_df <- human_df %>% 
+    filter(present=='present') %>%
+    group_by(subj_id) %>%
+    summarise(human = mean(correct[occlusion_is_low==1])-mean(correct[occlusion_is_low==0])) %>%
+    merge(sim_df %>% 
+    filter(present=='present') %>%
+    group_by(subj_id) %>%
+    summarise(sim = mean(correct[occlusion_is_low==1])-mean(correct[occlusion_is_low==0]))) %>%
+    merge(fi_df %>% 
+    filter(present=='present') %>%
+    group_by(subj_id) %>%
+    summarise(fi = mean(correct[occlusion_is_low==1])-mean(correct[occlusion_is_low==0]))) %>%
+    merge(ni_df %>% 
+    filter(present=='present') %>%
+    group_by(subj_id) %>%
+    summarise(ni = mean(correct[occlusion_is_low==1])-mean(correct[occlusion_is_low==0])))
+  
   errora_df %>% 
     ggplot(aes(x=human,y=sim)) +
     geom_abline(slope=1,intercept=0, alpha=0.3) +
     geom_hline(yintercept=0, alpha=0.15)+
     geom_vline(xintercept=0, alpha=0.15)+
-    geom_point(color=detection_colors[2], alpha=0.2) +
+    geom_point(color='black', alpha=0.05,size=1) +
     theme_classic() +
     theme(aspect.ratio=1)+
     coord_fixed()+
     scale_x_continuous(limits = c(floor(min(errora_df$human,errora_df$sim)*5)/5,ceil(max(errora_df$human,errora_df$sim)*5)/5))+
     scale_y_continuous(limits = c(floor(min(errora_df$human,errora_df$sim)*5)/5,ceil(max(errora_df$human,errora_df$sim)*5)/5))+
-    labs(x='observed false alarm effect',
-         y='recovered false alarm effect')+
-    geom_smooth(method='lm', alpha=0.3, color=detection_colors[2], fill=detection_colors[2])+
-    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='black', fill='black')+
-    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='brown', fill='brown') 
+    labs(x='observed false-alarm rate effect',
+         y='recovered false-alarm rate effect')+
+    geom_smooth(method='lm', alpha=0.3, color='black', fill='black')+
+    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='#5bb044', fill='#5bb044', linetype=2) +
+    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='#8f4f9a', fill='#8f4f9a', linetype=3) 
   
   ggsave(paste('../docs/figures/MLE_parameter_simulations/basic_model/errors/recovery/effect_recovery_fa',exp_number,'.png',sep=''), width=3.2,height=3.2, dpi=600)
-  
-  errorp_df %>% 
-    ggplot(aes(x=human,y=sim)) +
-    geom_abline(slope=1,intercept=0, alpha=0.3) +
-    geom_hline(yintercept=0, alpha=0.15)+
-    geom_vline(xintercept=0, alpha=0.15)+
-    geom_point(color=detection_colors[1], alpha=0.2) +
-    theme_classic() +
-    theme(aspect.ratio=1)+
-    scale_x_continuous(limits = c(floor(min(errorp_df$human,errorp_df$sim)*5)/5,ceil(max(errorp_df$human,errorp_df$sim)*5)/5))+
-    scale_y_continuous(limits = c(floor(min(errorp_df$human,errorp_df$sim)*5)/5,ceil(max(errorp_df$human,errorp_df$sim)*5)/5))+
-    coord_fixed()+
-    labs(x='observed miss effect',
-         y='recovered miss effect')+
-    geom_smooth(method='lm', alpha=0.3, color=detection_colors[1], fill=detection_colors[1])+
-    geom_smooth(aes(x=human,y=fi),method='lm', alpha=0.3, color='black', fill='black')+
-    geom_smooth(aes(x=human,y=ni),method='lm', alpha=0.3, color='brown', fill='brown') 
-  
-  ggsave(paste('../docs/figures/MLE_parameter_simulations/basic_model/errors/recovery/effect_recovery_miss',exp_number,'.png',sep=''), width=3.2,height=3.2, dpi=600)
-  
   return(errorp_df%>%mutate(present=1)%>%rbind(errora_df%>%mutate(present=0)))
     
 }
@@ -2054,7 +2055,11 @@ compare_correlations_with_fi <- function(correlation_df,present_indicator) {
 
 ```
 
-To quantify the model's success in capturing population variability in the effect of occlusion on error rates and response times, we extracted the correlation between the true effects of occlusion and the effects as measured in artificial data, simulated using the parameters of the same participants. True and simulated effects were correlated (more so for error rate effects than for reaction time effects). Specifically, for each of the four measures (miss rate, false alarm rate, reaction time in correct target-present responses, and reaction time in correct target-absent responses), the model could account for both positive and negative effects of occlusion as emerging from a rational policy (see Fig. X).
+Furthermore, the model successfully captured some, but not all, population variability in the effects of occlusion on error rates and reaction times. Specifically, the correlation between the effect of occlusion on target-absent decision times in human data and in simulated data, generated using the parameters fitted to individual subjects, was `r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` in Exp. 1, `r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` in Exp. 2, and `r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` in Exp. 3.
+
+Inspecting the fitted model parameters revealed that overall, $\alpha$ and $\bar\alpha$ were correlated across individuals (Exp. 1: `r apa_print(cor.test(E1_parameters$alpha,E1_parameters$belalpha))$estimate`; Exp. 2: `r apa_print(cor.test(E2_parameters$alpha,E2_parameters$belalpha))$estimate`; Exp. 3: `r apa_print(cor.test(E3_parameters$alpha,E3_parameters$belalpha))$estimate`), meaning participants' beliefs about the effects of occlusion on visibility were proportional to the true effect occlusion had on stimulus visibility. Importantly, despite this strong alignment, participants had an overall tendency to act in accordance with a belief that occlusion affected visibility to a lesser degree than its true effect (Exp. 1: `r apa_print(t.test(E1_parameters$belalpha-E1_parameters$alpha))$statistic`; Exp. 2: `r apa_print(t.test(E2_parameters$belalpha-E2_parameters$alpha))$statistic`; Exp. 3: `r apa_print(t.test(E3_parameters$belalpha-E3_parameters$alpha))$statistic`). While occlusion had a similar effect on $\alpha$ in Exp. 2 and 3 (`r apa_print(t.test(E2_parameters$alpha,E3_parameters$alpha))$statistic`), the added reference stimuli in Exp. 3 affected $\bar\alpha$, bringing it closer to $\alpha$ itself (a contrast between $|\alpha-\bar\alpha|$ in Exp. 2 and 3: `r apa_print(t.test(abs(E2_parameters$alpha-E2_parameters$belalpha),abs(E3_parameters$alpha-E3_parameters$belalpha)))$statistic`). This is in line with the theoretical interpretation of these two model parameters as being based in the true and believed effects of occlusion on visibility, respectively.
+
+<!-- To quantify the model's success in capturing population variability in the effect of occlusion on error rates and response times, we extracted the correlation between the true effects of occlusion and the effects as measured in artificial data, simulated using the parameters of the same participants. True and simulated effects were correlated (more so for error rate effects than for reaction time effects). Specifically, for each of the four measures (miss rate, false alarm rate, reaction time in correct target-present responses, and reaction time in correct target-absent responses), the model could account for both positive and negative effects of occlusion as emerging from a rational policy (see Fig. X). -->
 
 ```{r regression model}
 
@@ -2159,7 +2164,7 @@ plot_error_coefficients(1)
 plot_error_coefficients(2)
 plot_error_coefficients(3)
 
-E1.miss_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp==1));
+E1.miss_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp==1));
 results_table <- apa_print(anova(E1.miss_model))$table%>%mutate(effect='miss',exp=1)
 
 addResultsToTable <- function(model,effect_label,exp_label,results_table) {
@@ -2168,96 +2173,106 @@ addResultsToTable <- function(model,effect_label,exp_label,results_table) {
   return(results_table)
 }
 
-E2.miss_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp==2));
+E2.miss_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp==2));
 results_table <- addResultsToTable(E2.miss_model,'miss',2,results_table)
 
-E3.miss_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp==3));
+E3.miss_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp==3));
 results_table <- addResultsToTable(E3.miss_model,'miss',3,results_table)
 
-E2a.miss_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp=='2a'));
+E2a.miss_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp=='2a'));
 results_table <- addResultsToTable(E2a.miss_model,'miss','2a',results_table)
 
-E3a.miss_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp=='3a'));
+E3a.miss_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp=='3a'));
 results_table <- addResultsToTable(E3a.miss_model,'miss','3a',results_table)
 
-E1.FA_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp==1));
+E1.FA_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp==1));
 results_table <- addResultsToTable(E1.FA_model,'FA',1,results_table)
 
-E2.FA_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp==2));
+E2.FA_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp==2));
 results_table <- addResultsToTable(E2.FA_model,'FA',2,results_table)
 
-E3.FA_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp==3));
+E3.FA_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp==3));
 results_table <- addResultsToTable(E3.FA_model,'FA',3,results_table)
 
-E2a.FA_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp=='2a'));
+E2a.FA_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp=='2a'));
 results_table <- addResultsToTable(E2a.FA_model,'FA','2a',results_table)
 
-E3a.FA_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp=='3a'));
+E3a.FA_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp=='3a'));
 results_table <- addResultsToTable(E3a.FA_model,'FA','3a',results_table)
 
 
-E1.rtp_model <- lm(present~alpha+belalpha+gamma,data=rt_df%>%filter(exp==1));
+E1.rtp_model <- lm(present~alpha+belalpha,data=rt_df%>%filter(exp==1));
 results_table <- addResultsToTable(E1.rtp_model,'rtp',1,results_table)
 
-E2.rtp_model <- lm(present~alpha+belalpha+gamma,data=rt_df%>%filter(exp==2));
+E2.rtp_model <- lm(present~alpha+belalpha,data=rt_df%>%filter(exp==2));
 results_table <- addResultsToTable(E2.rtp_model,'rtp',2,results_table)
 
-E3.rtp_model <- lm(present~alpha+belalpha+gamma,data=rt_df%>%filter(exp==3));
+E3.rtp_model <- lm(present~alpha+belalpha,data=rt_df%>%filter(exp==3));
 results_table <- addResultsToTable(E3.rtp_model,'rtp',3,results_table)
 
-E2a.rtp_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp=='2a'));
+E2a.rtp_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp=='2a'));
 results_table <- addResultsToTable(E2a.rtp_model,'rtp','2a',results_table)
 
-E3a.rtp_model <- lm(present~alpha+belalpha+gamma,data=error_df%>%filter(exp=='3a'));
+E3a.rtp_model <- lm(present~alpha+belalpha,data=error_df%>%filter(exp=='3a'));
 results_table <- addResultsToTable(E3a.rtp_model,'rtp','3a',results_table)
 
 
-E1.rta_model <- lm(absent~alpha+belalpha+gamma,data=rt_df%>%filter(exp==1));
+E1.rta_model <- lm(absent~alpha+belalpha,data=rt_df%>%filter(exp==1));
 results_table <- addResultsToTable(E1.rta_model,'rta',1,results_table)
 
-E2.rta_model <- lm(absent~alpha+belalpha+gamma,data=rt_df%>%filter(exp==2));
+E2.rta_model <- lm(absent~alpha+belalpha,data=rt_df%>%filter(exp==2));
 results_table <- addResultsToTable(E2.rta_model,'rta',2,results_table)
 
-E3.rta_model <- lm(absent~alpha+belalpha+gamma,data=rt_df%>%filter(exp==3));
+E3.rta_model <- lm(absent~alpha+belalpha,data=rt_df%>%filter(exp==3));
 results_table <- addResultsToTable(E3.rta_model,'rta',3,results_table)
 
-E2a.rta_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp=='2a'));
+E2a.rta_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp=='2a'));
 results_table <- addResultsToTable(E2a.rta_model,'rta','2a',results_table)
 
-E3a.rta_model <- lm(absent~alpha+belalpha+gamma,data=error_df%>%filter(exp=='3a'));
+E3a.rta_model <- lm(absent~alpha+belalpha,data=error_df%>%filter(exp=='3a'));
 results_table <- addResultsToTable(E3a.rta_model,'rta','3a',results_table)
 
-results_table %>%filter(exp=='1' | exp=='2' | exp=='3')%>%dplyr::select(exp,effect,term,estimate,p.value)
+# results_table %>%filter(exp=='1' | exp=='2' | exp=='3')%>%dplyr::select(exp,effect,term,estimate,p.value)
 
 ```
 
-Finally, we compared the unique effects of $\alpha$ (true visibility) and $\bar\alpha$ (beliefs about visibility) on accuracy and reaction times in target-present and target-absent trials. This was done by fitting a multiple regression model, predicting individual-level contrasts of interest (for example, the standardised average reaction times in high versus low occlusion, extracted for individual subjects) from $\alpha$ and $\bar\alpha$, and comparing the explained variance in the full model with the explained variance in the reduced model, dropping the parameter of interest. A clear picture appears: while $\alpha$ explains more variance than $\bar\alpha$ in decision accuracy and decision times in target-present trials, the opposite is true for target-absent trials. Whenever stimuli are absent, decisions are affected by participants' beliefs about the effects of occlusion on visiblity much more than its actual effects on visibility.
+<!-- Finally, we compared the unique effects of $\alpha$ (true visibility) and $\bar\alpha$ (beliefs about visibility) on accuracy and reaction times in target-present and target-absent trials by fitting a multiple regression model, predicting individual-level contrasts of interest (for example, the standardised average reaction times in high versus low occlusion, extracted for individual subjects) from $\alpha$ and $\bar\alpha$. A clear picture appears: while $\alpha$ explains more variance than $\bar\alpha$ in decision accuracy and decision times in target-present trials, the opposite is true for target-absent trials. Whenever stimuli are absent, decisions are affected by participants' beliefs about the effects of occlusion on visiblity much more than its actual effects on visibility. -->
 
-<!-- To test the idea that variability in the effects of occlusion on perceptual decisions reflects more than variability in the physical effects of occlusion on visibility, we fitted two reduced models, using the same model-fitting procedure. The first reduced model forced the constraint that $\alpha=\bar\alpha$, effectively forcing a $V_{INCORP}$-like behaviour. The second reduced model forced the constraint that $\bar\alpha=1$, rendering participants unaware of the effects of occlusion on visibility, similar to $V_{IGNORE}$. We then measured how well the two models captured population variability in the effects of occlusion by taking the Pearson correlation between observed and simulated effects, across participatns. A much smaller proportion of variability in target-absent response times could be accounted for by $V_{IGNORE}$ than by the full model (`r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p=0.002$; Exp. 2: :`r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; Exp. 3: :`r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; correlations were compared using Steiger's test for dependent correlations, @steiger1980 ). Similarly, a much smaller proportion of variability in the effect of occlusion on false alarms could be explained by $V_{incorp}$ than by the full model (Exp. 1:`r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 2: `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 3: `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$). Together, the effect of occlusion on participants' error rates and response times could not be fully captured by single perceptual parameter. An additional parameter, representing participants' beliefs about the effects of occlusion on target visibility, was required to account for population heterogeneity. -->
+(ref:scatters) Correlations between observed and simulated effects of occlusion on decisions in the absence of the target, for the full model (black solid lines), and two model variants: one that is constrained to accurately incorporate beliefs about the effects of occlusion on visibility (green dashed lines) and one that is constrained to ignore such beliefs (purple dotted lines). A) Occlusion effects on the false alarm rate. B) Occlusion effects on response times in correct rejections. \*\*: p\<0.01, \*\*\*: p\<0.001
+```{r model-scatters, echo=FALSE, fig.cap="(ref:scatters)"}
+knitr::include_graphics("figures/model_scatters.png")
+```
+
+
+To test the idea that variability in the effects of occlusion on perceptual decisions reflects more than variability in the physical effects of occlusion on visibility, we fitted two reduced models, using the same model-fitting procedure. The first reduced model forced the constraint that $\alpha=\bar\alpha$, effectively forcing a $V_{INCORP}$-like behaviour. The second reduced model forced the constraint that $\bar\alpha=1$, rendering participants unaware of the effects of occlusion on visibility, similar to $V_{IGNORE}$. We then measured how well the two models captured population variability in the effects of occlusion by taking the Pearson correlation between observed and simulated effects, across participatns. A much smaller proportion of variability in target-absent response times could be accounted for by $V_{IGNORE}$ than by the full model (`r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p=0.002$; Exp. 2: :`r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; Exp. 3: :`r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; correlations were compared using Steiger's test for dependent correlations, @steiger1980 ). Similarly, a much smaller proportion of variability in the effect of occlusion on false alarms could be explained by $V_{incorp}$ than by the full model (Exp. 1:`r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 2: `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 3: `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$). Together, the effect of occlusion on participants' error rates and response times could not be fully captured by single perceptual parameter. Independently modeling participants' beliefs about the effects of occlusion on target visibility significantly improved the model's ability to account for individual differences.
 
 # Discussion
 
 Occlusion affects not only the visibility of objects, but also the counterfactual visibility of absent objects: how visible they would have been had they been present. Here, to pinpoint the roles of counterfactual visibility in perceptual decision making, we asked whether occlusion had similar effects on perceiving stimuli and their absence. Below we summarise the three main contributions of this paper, potential limitations, and open questions for future research.
 
-## Contributions and limitations
+## Contributions
 
 First, we provide an ideal observer model of perceptual detection. This model traces presence-absence asymmetries in reaction time and confidence to asymmetries in the information value of positive and negative evidence in a detection setting. The model also formalises the argument that metacognitive beliefs about perception have a key role in decisions about absence [@kanai2010; @mazor2021inference]. We show that the same manipulation can have opposite effects on decisions in the absence of a target, depending on the agent's metacognitive beliefs about the manipulation, or their tendency to incorporate these beliefs into their perceptual decision making process.
 
 Second, we find evidence for the incorporation of counterfactual visibility into perceptual decisions in the absence of a target, as well as subjective confidence in such decisions. Using reverse correlation, we further show that timing and confidence have strikingly different origins in decisions about presence and absence: available perceptual evidence mostly affects decisions about presence, and beliefs about the availability of counterfactual evidence mostly affect decisions about absence.
 
-Finally, "target absent" decision times uncover robust heterogeneity in the incorporation of beliefs about counterfactual visibility into perceptual decisions. This heterogeneity further underscores the complexity of the cognitive processes involved in deceptively simple perceptual decisions. Our model traces this variability to individual differences in the incorporations of beliefs about visibility into perceptual decisions. Importantly, our model cannot decide between two equally valid interpretations of this variability: as emerging from differences in people's tendency to incorporate counterfactuals into their decision making, or as reflecting variability in meta-perceptual knowledge about the effects of occlusion on perception. Indeed, knowing that occlusion affects stimulus visibility is a precondition for rationally incorporating this knowledge into the decision-making process. While this may seem like an unlikely account, an increase in the effect of occlusion on the false alarm rate between Exp. 2 and 3 indicates that having direct access to the effects of occlusion on stimulus visibility does facilitate the use of counterfactuals in perception. Importantly, however, the fact that target-absent decision times in Exp. 3 were subject to the same population variability, with some participants making reliably faster decisions about absence when more of the display was occluded, suggest that incomplete meta-perceptual knowledge cannot be the full explanation. Some participants failed to use beliefs about counterfactual visibility even when it was directly presented to them.
+Finally, the effect of occlusion on "target absent" decision times was reliably variable across individuals. Computational modelling suggests that this variability is related, at least in part, to individual differences in the incorporation of beliefs about counterfactual visibility into perceptual decisions, further underscoring the complexity of the cognitive processes involved in deceptively simple perceptual decisions.
+
+Importantly, our model cannot decide between two equally valid interpretations of this variability: as emerging from differences in people's tendency to incorporate counterfactuals into their decision making, or as reflecting variability in meta-perceptual knowledge about the effects of occlusion on perception. Indeed, knowing that occlusion affects stimulus visibility is a precondition for rationally incorporating this knowledge into the decision-making process. While this may seem like an unlikely account, an increase in the effect of occlusion on the false alarm rate between Exp. 2 and 3 indicates that having direct access to the effects of occlusion on stimulus visibility does facilitate the use of counterfactuals in perception. Importantly, however, the fact that target-absent decision times in Exp. 3 were subject to the same population variability, with some participants making reliably faster decisions about absence when more of the display was occluded, suggest that incomplete meta-perceptual knowledge cannot be the full explanation. Some participants failed to use beliefs about counterfactual visibility even when it was directly presented to them.
 
 <!-- Individual differences in incorporating counterfactuals into perceptual decisions may have far-reaching implications for people's ability to make valid inferences from perceptual inputs, tell true absences from low-visibility, and distinguish between true perceptual input and expected or imagined input.  -->
 
-Our results fit within the broader project of understanding perception as probabilistic inference on noisy sensory data. Much focus has been placed on the role of prior expectations in perceptual inference [@summerfield2009; @kok2013; @yon2020action; @press2020], with important discussions regarding the (im)penetrability of visual perception to such effects from cognition [@pylyshyn1999; @firestone2016]. Here we focus on the other component of Bayesian reasoning, often neglected in such discussions: the likelihood function going from world states to sensory input. Unlike prior expectations about the world (e.g., the probability that a letter will be present in the next trial), these likelihood functions describe the perceptual system itself (e.g., the probability that I would be able to perceive the letter when it is present). As we show here, such beliefs affect not only metacognitive confidence ratings, but also decision times and decision criteria of the detection judgments themselves, revealing a complex web of interactions between perception, cognition, and metacognition.
+## Limitations and future directions
 
-## Future directions
+In our attempt to keep the ideal observer model as simple as possible, we made several simplifying assumptions. First, we treat perception as the accumulation of binary quanta of evidence: at any given moment, the "presence sensor" is either on or off. This is unlikely to be the case: the perception of complex stimuli draws on a population of sensory units, allowing evidence strength to vary in a semi-continuous fashion. Similarly, we treated the visibility of stimuli (that is, the likelihood that the presence sensor will discharge), as well as beliefs about visibility, as constant across all trials within a condition. Again, this is unlikely to be true: stimuli will have different visibility on different experimental trials not only due to internal factors such as fluctuations in attention, but also due to the random position of occluders: visibility is affected more when occluding some areas of the display compared to others. Beliefs about visibility can be expected to fluctuate in similar ways. Finally, we model temporal discounting using an exponential function, but it is likely that other functions are more adequate. With these simplifying assumptions in place, the model successfully accounted for key findings: decisions about absence are slower, less confident, and their timing is less sensitive to manipulations of visibility than decisions about presence. The model also accounted for individual differences in the effects of occlusion on decisions and decision times. At the same time, the model failed to account for other aspects of the data, including the group-level effect of occlusion on the false alarm rate in Exp. 2 and 3 and the relatively slower error trials. In the Appendix we show that allowing visibility and beliefs about visibility to vary between trials can account for the relationship between accuracy and reaction time. Other adaptations to the model, or to our model-fitting procedure, will be necessary to more closely match the observed data.
 
-We see this work as establishing that many—but not all—individuals use beliefs about expected or counterfactual visibility to inform their perceptual decisions, and that traces of these beliefs can be identified in the way detection decisions are made in the absence of a target. For our purpose here, we used the most obvious visibility manipulation that we could think of: partial stimulus occlusion. Future research can use target-absent trials to infer what people know and believe about their own perception. For example, it may turn out that some manipulations affect visibility without affecting expected visibility, or vice versa: affecting expected visibility with no real effect on visibility[^1]. This way, inferences in the absence of a target can provide a window into implicit metacognitive knowledge about perception [@mazor2021inference].
+We see this work as establishing that many—but possibly not all—individuals use beliefs about expected or counterfactual visibility to inform their perceptual decisions, and that traces of these beliefs can be identified in the way detection decisions are made, especially in the absence of a target. For our purpose here, we used the most obvious visibility manipulation that we could think of: partial stimulus occlusion. Future research can use target-absent trials to infer what people know and believe about their own perception. For example, it may turn out that some manipulations affect visibility without affecting expected visibility, or vice versa: affecting expected visibility with no real effect on visibility[^1]. This way, inferences in the absence of a target can provide a window into implicit metacognitive knowledge about perception [@mazor2021inference].
 
 [^1]: In fact, we started this line of work after some of us (MM and CP, in prep.) identified a manipulation which affects visibility without affecting target-absent trials.
 
-Finally, the robust individual differences we reveal here raise fundamental questions for future research. Does a tendency to incorporate counterfactuals into perceptual decision making covary with other aspects of perception and cognition, apart from the ones we observe here? Specifically, does it correlate with the tendency to consider counterfactuals outside perception [for example, in making inferences based on vignettes, @byrne1999] ? With how prior beliefs affect their perception more broadly [for example, in their susceptability to cue-stimulus conditioning, @powers2017; @kok2013; @press2020]? And, are those participants whose behaviour is more aligned with variant $B$ simply less rational, or alternatively, can their disregard of counterfactual visibility be rational under some assumptions, or especially adapted to some environmental settings? We are eager to find out the answer to these questions as future research will elucidate the theoretical significance of these individual differences.
+Finally, the robust individual differences we reveal here raise fundamental questions for future research. Does a tendency to incorporate counterfactuals into perceptual decision making covary with other aspects of perception and cognition, apart from the ones we observe here? Specifically, does it correlate with the tendency to consider counterfactuals outside perception [for example, in making inferences based on vignettes, @byrne1999, or on inference from the absence of evidence, @hsu2017] ? With how prior beliefs affect their perception more broadly [for example, in their susceptability to cue-stimulus conditioning, @powers2017; @kok2013; @press2020]? And, are those participants whose behaviour is more aligned with variant $V_ignore$ simply less rational, or alternatively, can their disregard of counterfactual visibility be rational under some assumptions, or especially adapted to some environmental settings? We are eager to find out the answers to these questions as future research will elucidate the theoretical significance of these individual differences.
+
+Our results fit within the broader project of understanding perception as probabilistic inference on noisy sensory data. Much focus has been placed on the role of prior expectations in perceptual inference [@summerfield2009; @kok2013; @yon2020action; @press2020], with important discussions regarding the (im)penetrability of visual perception to such effects from cognition [@pylyshyn1999; @firestone2016]. Here we focus on the other component of Bayesian reasoning, often neglected in such discussions: the likelihood function going from world states to sensory input. Unlike prior expectations about the world (e.g., the probability that a letter will be present in the next trial), these likelihood functions describe the perceptual system itself (e.g., the probability that I would be able to perceive the letter when it is present). As we show here, such beliefs affect not only metacognitive confidence ratings, but also decision times and decision criteria of the detection judgments themselves, revealing a complex web of interactions between perception, cognition, and metacognition.
 
 ## Conclusion
 
@@ -2458,3 +2473,13 @@ Model fitting was carried out in Matlab (version R2023a, Optimization Toolbox). 
 ```{=tex}
 \endgroup
 ```
+
+# Appendix {-} 
+
+# Parameter recovery
+
+This will be Appendix A.
+
+# Within-condition variability
+
+This will be Appendix B.
