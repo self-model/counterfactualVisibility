@@ -1,0 +1,221 @@
+---
+title             : "Detection in Context, Exp. 1 (prev. 3) - pre-registration document"
+shorttitle        : "Detection in Context, Exp. 1 (prev. 3) - pre-registration document"
+
+author: 
+  - name          : "Matan Mazor"
+    affiliation   : "1,2"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Malet Street, London WC1E 7HX"
+    email         : "mtnmzor@gmail.com"
+  #   role:         # Contributorship roles (e.g., CRediT, https://casrai.org/credit/)
+  #     - Conceptualization
+  #     - Writing - Original Draft Preparation
+    
+  - name          : "Clare Press"
+    affiliation   : "1,2"
+    # role:
+    #   - Writing - Review & Editing
+
+affiliation:
+  - id            : "1"
+    institution   : "Birkbeck, University of London"
+  - id            : "2"
+    institution   : "Wellcome Centre for Human Neuroimaging, UCL"
+
+
+abstract: |
+  
+  
+  
+  <!-- https://tinyurl.com/ybremelq -->
+  
+keywords          : "detection, absence, presence"
+wordcount         : "X"
+
+bibliography      : ["references.bib"]
+
+floatsintext      : no
+figurelist        : no
+tablelist         : no
+footnotelist      : no
+linenumbers       : yes
+mask              : no
+draft             : no
+
+documentclass     : "apa6"
+classoption       : "man"
+output            : word_document
+---
+
+```{r setup, include = FALSE}
+library('groundhog')
+groundhog.library(
+  c(
+    'papaja',
+    'tidyverse'
+  ), "2023-12-01"
+)
+r_refs("r-references.bib")
+knitr::opts_chunk$set(fig.pos = "!H", out.extra = "",warning=F,echo=F,message=F,cache=T)
+```
+
+```{r analysis-preferences}
+# Seed for random number generation
+set.seed(42)
+knitr::opts_chunk$set(cache.extra = knitr::rand_seed)
+```
+
+```{r load-and-process}
+E1.raw_df <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfiles_batch1/all_data.csv') %>%
+  filter(frame_index==0)%>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key) 
+
+E1.low_accuracy <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    accuracy = mean(correct)) %>%
+  filter(accuracy<0.5) %>%
+  pull(subj_id)
+
+E1.too_slow <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    third_quartile_RT = quantile(RT,0.75)) %>%
+  filter(third_quartile_RT>5000) %>%
+  pull(subj_id)
+
+E1.too_fast <- E1.raw_df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  group_by(subj_id) %>%
+  summarise(
+    first_quartile_RT = quantile(RT,0.25)) %>%
+  filter(first_quartile_RT<100) %>%
+  pull(subj_id)
+
+E1.to_exclude <- c(
+  E1.low_accuracy,
+  E1.too_slow,
+  E1.too_fast
+) %>% unique()
+
+E1.df <- E1.raw_df %>%
+  filter(!(subj_id %in% E1.to_exclude)) %>%
+  mutate(correlation_with_mask=as.numeric(correlation_with_mask));
+
+```
+
+# Deviations from pre-registration
+
+Instead of occluding 5% or 10% of pixels on different trials, we occluded 5% or 15% of pixels.
+
+# Results
+
+## Participants
+
+`r E1.raw_df$subj_id%>%unique()%>%length()` participants took part. Participants were excluded if their accuracy fell below 50% (0 participants). We also excluded participants for having extremely fast (`r E1.too_fast%>%length()` participants) or slow (`r E1.too_slow%>%length()` participants) reaction times in one or more of the tasks (below 100 milliseconds or above 5 seconds in more than 25% of the trials). 
+
+Trials with response time below 100 milliseconds (`r (E1.raw_df%>%filter(RT<100)%>%nrow()/E1.raw_df%>%filter(RT>0)%>%nrow())%>%printnum()` of all trials) or above 5 seconds (`r (E1.raw_df%>%filter(RT>5000)%>%nrow()/E1.raw_df%>%filter(RT>0)%>%nrow())%>%printnum()` of all trials) were excluded from the response-time analysis.
+
+### Hypotheses and analysis plan
+
+This study is designed to test the timing of decisions to terminate evidence accumulation in the absence of a target as a function of stimulus occlusion.
+
+```{r H1, echo=FALSE, cache=TRUE}
+
+E1.RT_by_resp <- E1.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
+  group_by(subj_id,resp) %>%
+  summarise(RT=median(RT))%>%
+  spread(resp,RT,sep='')%>%
+  mutate(diff=respTRUE-respFALSE)
+
+
+```
+
+*Hypothesis 1 (PRESENCE/ABSENCE RESPONSE TIME)*: We tested the null hypothesis that response times are similar for target-absent and target-present responses, aiming to replicate the finding that decisions about the absence of a target are slower than decisions about its presence [@mazor2021metacognitive; @mazor2020distinct]. 
+
+A paired t-test on the median individual level-response times revealed a significant difference (`r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$full_result`). 
+
+```{r H2, echo=FALSE, cache=TRUE}
+
+E1.RT_by_occlusion_in_presence_correct_only <- E1.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & resp & correct) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.05-hide_proportion0.15);
+
+```
+
+*Hypothesis 2 (OCCLUSION EFFECT IN PRESENCE)*: We tested the null hypothesis that target-present response times are similar when 5% or 15% of the pixels are occluded. 
+
+A paired t-test on the median individual level-response times in correct trials only revealed a significant difference (`r apa_print(E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+```{r H3, echo=FALSE, cache=TRUE}
+
+E1.RT_by_occlusion_in_absence_correct_only <- E1.df %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000 & !resp & correct) %>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(RT=median(RT))%>%
+  spread(hide_proportion,RT,sep='')%>%
+  mutate(diff=hide_proportion0.05-hide_proportion0.15);
+
+```
+
+*Hypothesis 3 (OCCLUSION EFFECT IN ABSENCE)*: We tested the null hypothesis that response times in target-absent responses are similar when 5% or 15% of the pixels are occluded. 
+
+A paired t-test on the median individual level-response times in correct trials only revealed a null effect (`r apa_print(E1.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+```{r H4, echo=FALSE, cache=TRUE}
+
+E1.RT_by_occlusion_and_response_correct_only <- merge(
+  E1.RT_by_occlusion_in_presence_correct_only,
+  E1.RT_by_occlusion_in_absence_correct_only,
+  by= 'subj_id',
+  suffixes = c('presence','absence')) %>%
+  mutate(interaction = diffpresence-diffabsence);
+```
+
+*Hypothesis 4 (OCCLUSION RESPONSE INTERACTION)*: We tested the null hypothesis that the effect of occlusion on reaction time is similar in target-absent and target-present responses, by performing a group-level t-test on the subject-level contrast $(median(RT_{P,5\%})-median(RT_{P,10\%}))-(median(RT_{A,5\%})-median(RT_{A,10\%}))$ Where $P$ and $A$ stand for present and absent, and 5% and 15% represent the proportion of hidden pixels. Here too, analysis was restricted to correct trials only.
+
+We find a significant interaction (`r apa_print(E1.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$full_result`). 
+
+```{r SDT, echo=FALSE, cache=TRUE}
+
+E1.descriptives_by_occlusion<- E1.df %>%
+  filter(test_part=='test1' | test_part=='test2') %>%
+  mutate(resp = response==presence_key)%>%
+  group_by(subj_id,hide_proportion) %>%
+  summarise(accuracy=mean(correct),
+            resp_bias=mean(resp),
+            RT=median(RT),
+            hit_rate = (sum(correct & present)+0.5)/(sum(present)+1),
+            fa_rate = (sum(!correct & !present)+0.5)/(sum(!present)+1),
+            d = qnorm(hit_rate)-qnorm(fa_rate),
+            c = -0.5*(qnorm(hit_rate)+qnorm(fa_rate)))
+```
+
+*Hypothesis 5 (SENSITIVITY)*: We tested the null hypothesis that perceptual sensitivity (measured as $d'=z(H)-z(F)$) is equal as a function of the proportion of hidden pixels. To allow the extraction of d' for participants who committed no false-alarms or misses, we added 0.5 to miss, hit, false-alarm and correct rejection counts [@snodgrass1988pragmatics].
+
+We find a significant drop in d' as a function of occlusion (`r apa_print(E1.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=d[hide_proportion==0.05]-d[hide_proportion==0.15])%>%pull(diff)%>%t.test())$full_result`)
+
+*Hypothesis 6 (CRITERION)*: We tested the null hypothesis that decision criterion (measured as $c=-0.5(z(H)+z(F))$) is unaffected by the proportion of hidden pixels. To allow the extraction of a decision criterion for participants who committed no false-alarms or misses, we added 0.5 to miss, hit, false-alarm and correct rejection counts [@snodgrass1988pragmatics].
+
+We find a significantly more conservative criterion in high-occlusion trials (`r apa_print(E1.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=c[hide_proportion==0.05]-c[hide_proportion==0.15])%>%pull(diff)%>%t.test())$full_result`).
+
+
+# References
+
+\begingroup
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
+
+<div id="refs" custom-style="Bibliography"></div>
+\endgroup
