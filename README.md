@@ -12,7 +12,7 @@ The experiments in this repository are a subset of the [detection in context](ht
 Raw data from all four experiments is available on the project's OSF repository: [osf.io/7v2d6/](https://osf.io/7v2d6/)
 
 ## Analysis Scripts
-A fully reproducible data-to-paper code (in R and Rmarkdown) is available in the ['docs'](https://github.com/matanmazor/counterfactualVisibility/blob/main/docs/occlusion.Rmd) subdirectory. Scripts currently use local paths for data files. To read data directly from OSF, replace mentions of `loadAndPreprocessData` with `loadAndPreprocessDataFromOSF`.
+A fully reproducible data-to-paper code (in R and Rmarkdown), as well as reports of all pre-registered analyses, are available in the ['docs'](https://github.com/matanmazor/counterfactualVisibility/blob/main/docs/occlusion.Rmd) subdirectory. Scripts currently use local paths for data files. To read data directly from OSF, replace mentions of `loadAndPreprocessData` with `loadAndPreprocessDataFromOSF`.
 
 ## Experiment demos
 
