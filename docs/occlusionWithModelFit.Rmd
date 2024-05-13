@@ -54,7 +54,7 @@ After checking Taylor Swift's Wikipedia page, we are confident that she hasn't a
 
 Our focus here is on settings in which it is known that evidence is generally rare ($p(E=0)>>p(E=1)$), and that it is *informative*, that is, it is more likely to be present when an hypothesis $H$ is true ($p(E=1|H)>p(E=1|\neg H)$). In such cases, inferences about the negation of a hypothesis (for example, that a given musician did not retire from music; $\neg H$) should depend not only on the absence of evidence for $H$ (for example, that there is no announcement on their Wikipedia page; $E=0$) and our prior belief that the hypothesis is true ($p(H)$), but also on our internal model of how likely evidence is to ever become available, even when $H$ holds ($p(E=1|H)$) [@walton1992nonfallacious; @walton2010arguments; @oaksford2004bayesian]. In other words, we believe that something is not true (for example, that Taylor Swift hasn’t announced her retirement from music) when we believe that “if it were true, we would have heard about it” [@goldberg2011if].
 
-Here we examine whether people apply a similar reasoning in the domain of visual perception, and specifically in perceptual decisions about the absence of stimuli. We postulate that, similar to the case of public announcements on Wikipedia, in the case of visual perception too evidence (in the form of neuronal firing) is generally rare, and only ever available to support target presence, not absence.  If this is the case then absence should be inferred when 1) a stimulus is not perceived ($E=0$), and 2) it is likely that it would have been perceived if it were present ($p(E=1|present)$ is sufficiently high). In other words, detection decisions should depend not on the visibility of the absence of stimuli, but on *counterfactual visibility*: beliefs about the visibility, that is, the probability of being perceived, of stimuli that are not in fact present.
+Here we examine whether people apply a similar reasoning in the domain of visual perception, and specifically in perceptual decisions about the absence of stimuli. We postulate that, similar to the case of public announcements on Wikipedia, in the case of visual perception too evidence (in the form of neuronal firing) is generally rare, and only ever available to support target presence, not absence. If this is the case then absence should be inferred when 1) a stimulus is not perceived ($E=0$), and 2) it is likely that it would have been perceived if it were present ($p(E=1|present)$ is sufficiently high). In other words, detection decisions should depend not on the visibility of the absence of stimuli, but on *counterfactual visibility*: beliefs about the visibility, that is, the probability of being perceived, of stimuli that are not in fact present.
 
 We contrast this possibility with two alternatives. First, it may be that the absence of stimuli can be directly perceived just like their presence. For example, it has been suggested that sensory neurons typically have corresponding “anti-neurons” with opposite selectivity [@gold2001; @gold2002; @newsome1989], rendering it possible to make perceptual inferences in a purely feed-forward manner, by extracting the difference in activation between neurons and their anti-neurons as perceptual evidence. @gold2001 suggest that in the case of perceptual detection, anti-neurons may selectively discharge in response to target absence, making it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by neurons that are sensitive to the physical correlates of absent-ness.
 
@@ -248,7 +248,7 @@ In three pre-registered online experiments, participants performed a near-thresh
 
 More specifically, `r E1.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 1, in which either 5 or 15 percent of the stimulus pixels were occluded by a static layer of randomly positioned black pixels (Fig. \@ref(fig:design)D, left panels). `r E2.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 2, in which we occluded 2 or 6 entire rows of pixels, and presented the occluders for additional 500 ms before stimulus onset, to facilitate a separation between the occluders and the noisy stimulus itself (Fig. \@ref(fig:design)D, middle panels). Exp. 2 was the only experiment in which participants also reported their confidence ratings on an analog scale in blocks 3 and 4 (Fig. \@ref(fig:design)C). Finally, `r E3.raw_df$subj_id%>%unique()%>%length()` participants took part in Exp. 3, in which the central stimulus was flanked by two stimuli, partly hidden behind the same row occluders, which, known to participants, always had the target in them (Fig. \@ref(fig:design)D, left panels). The rationale for this manipulation was to increase the availability of counterfactual visibility ("what would it look like if the stimulus had been present?") in target-absent trials.
 
-After applying our pre-registered accuracy and reaction-time based exclusion criteria, `r E1.raw_df$subj_id%>%unique()%>%length()`, `r E2.raw_df$subj_id%>%unique()%>%length()`, and `r E3.raw_df$subj_id%>%unique()%>%length()` participants were included in the main analysis for Experiments 1, 2, and 3, respectively. With those participants excluded, mean detection accuracy was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 1, `r E2.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E2.overall_descriptives%>%pull(accuracy)%>%sd()`), and `r E3.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E3.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 3. 
+After applying our pre-registered accuracy and reaction-time based exclusion criteria, `r E1.raw_df$subj_id%>%unique()%>%length()`, `r E2.raw_df$subj_id%>%unique()%>%length()`, and `r E3.raw_df$subj_id%>%unique()%>%length()` participants were included in the main analysis for Experiments 1, 2, and 3, respectively. With those participants excluded, mean detection accuracy was `r E1.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E1.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 1, `r E2.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E2.overall_descriptives%>%pull(accuracy)%>%sd()`), and `r E3.overall_descriptives%>%pull(accuracy)%>%mean()` (SD=`r E3.overall_descriptives%>%pull(accuracy)%>%sd()`) in Exp. 3.
 
 Results from all pre-registered analyses are presented in the Appendix.
 
@@ -279,21 +279,22 @@ Compare this with the asymmetric model in the right panels of Fig. \@ref(fig:mod
 ```{r H1, echo=FALSE, cache=TRUE}
 
 E1.RT_by_resp <- E1.df %>%
-  filter((test_part=='test1' | test_part=='test2') & RT>100) %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
   group_by(subj_id,resp) %>%
   summarise(RT=median(RT))%>%
   spread(resp,RT,sep='')%>%
   mutate(diff=respTRUE-respFALSE)
 
 E2.RT_by_resp <- E2.df %>%
-  filter((test_part=='test1' | test_part=='test2') & RT>100) %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100 & RT<5000) %>%
   group_by(subj_id,resp) %>%
   summarise(RT=median(RT))%>%
   spread(resp,RT,sep='')%>%
   mutate(diff=respTRUE-respFALSE)
 
+# the change in exclusion criteria is pre-registered
 E3.RT_by_resp <- E3.df %>%
-  filter((test_part=='test1' | test_part=='test2') & RT>100) %>%
+  filter((test_part=='test1' | test_part=='test2') & RT>100& RT<7000) %>%
   group_by(subj_id,resp) %>%
   summarise(RT=median(RT))%>%
   spread(resp,RT,sep='')%>%
@@ -2239,10 +2240,10 @@ results_table <- addResultsToTable(E3a.rta_model,'rta','3a',results_table)
 <!-- Finally, we compared the unique effects of $\alpha$ (true visibility) and $\bar\alpha$ (beliefs about visibility) on accuracy and reaction times in target-present and target-absent trials by fitting a multiple regression model, predicting individual-level contrasts of interest (for example, the standardised average reaction times in high versus low occlusion, extracted for individual subjects) from $\alpha$ and $\bar\alpha$. A clear picture appears: while $\alpha$ explains more variance than $\bar\alpha$ in decision accuracy and decision times in target-present trials, the opposite is true for target-absent trials. Whenever stimuli are absent, decisions are affected by participants' beliefs about the effects of occlusion on visiblity much more than its actual effects on visibility. -->
 
 (ref:scatters) Correlations between observed and simulated effects of occlusion on decisions in the absence of the target, for the full model (black solid lines), and two model variants: one that is constrained to accurately incorporate beliefs about the effects of occlusion on visibility (green dashed lines) and one that is constrained to ignore such beliefs (purple dotted lines). A) Occlusion effects on the false alarm rate. B) Occlusion effects on response times in correct rejections. \*\*: p\<0.01, \*\*\*: p\<0.001
+
 ```{r model-scatters, echo=FALSE, fig.cap="(ref:scatters)"}
 knitr::include_graphics("figures/model_scatters.png")
 ```
-
 
 To test the idea that variability in the effects of occlusion on perceptual decisions reflects more than variability in the physical effects of occlusion on visibility, we fitted two reduced models, using the same model-fitting procedure. The first reduced model forced the constraint that $\alpha=\bar\alpha$, effectively forcing a $V_{INCORP}$-like behaviour. The second reduced model forced the constraint that $\bar\alpha=1$, rendering participants unaware of the effects of occlusion on visibility, similar to $V_{IGNORE}$. We then measured how well the two models captured population variability in the effects of occlusion by taking the Pearson correlation between observed and simulated effects, across participatns. A much smaller proportion of variability in target-absent response times could be accounted for by $V_{IGNORE}$ than by the full model (`r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p=0.002$; Exp. 2: :`r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; Exp. 3: :`r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; correlations were compared using Steiger's test for dependent correlations, @steiger1980 ). Similarly, a much smaller proportion of variability in the effect of occlusion on false alarms could be explained by $V_{incorp}$ than by the full model (Exp. 1:`r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 2: `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 3: `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$). Together, the effect of occlusion on participants' error rates and response times could not be fully captured by single perceptual parameter. Independently modeling participants' beliefs about the effects of occlusion on target visibility significantly improved the model's ability to account for individual differences.
 
@@ -2473,14 +2474,121 @@ Model fitting was carried out in Matlab (version R2023a, Optimization Toolbox). 
 ```{=tex}
 \endgroup
 ```
+# Appendix {.unnumbered}
 
-# Appendix {-} 
+## Pre-registered analysis
 
-# Parameter recovery
+### Hypothesis 1 (PRESENCE/ABSENCE RESPONSE TIME)
 
+#### Exp. 1
 
+A paired t-test on the median individual level-response times revealed a significant difference between target-present and target-absent response times (`r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$full_result`).
 
-```{r recovery, echo=FALSE, cache=TRUE}
+#### Exp. 2
+
+A paired t-test on the median individual level-response times revealed a significant difference between target-present and target-absent response times (`r apa_print(E2.RT_by_resp%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+A paired t-test on the median individual level-response times revealed a significant difference between target-present and target-absent response times (`r apa_print(E3.RT_by_resp%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 2 (OCCLUSION EFFECT IN PRESENCE)
+
+#### Exp. 1
+
+A paired t-test on the median individual level-response times in hit trials revealed a significant effect of occlusion on RT (`r apa_print(E1.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 2
+
+A paired t-test on the median individual level-response times in hit trials revealed a significant effect of occlusion on RT (`r apa_print(E2.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+A paired t-test on the median individual level-response times in hit trials revealed a significant effect of occlusion on RT (`r apa_print(E3.RT_by_occlusion_in_presence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 3 (OCCLUSION EFFECT IN ABSENCE)
+
+#### Exp. 1
+
+A paired t-test on the median individual level-response times in correct rejection trials revealed no significant effect of occlusion on RT (`r apa_print(E1.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 2
+
+A paired t-test on the median individual level-response times in correct rejection trials revealed no significant effect of occlusion on RT (`r apa_print(E2.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+A paired t-test on the median individual level-response times in correct rejection trials revealed no significant effect of occlusion on RT (`r apa_print(E3.RT_by_occlusion_in_absence_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 4 (OCCLUSION RESPONSE INTERACTION)
+
+#### Exp. 1
+
+We find a significant interaction between occlusion level and response on reaction times (`r apa_print(E1.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$full_result`).
+
+#### Exp. 2
+
+We find a significant interaction between occlusion level and response on reaction times (`r apa_print(E2.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+We find a significant interaction between occlusion level and response on reaction times (`r apa_print(E3.RT_by_occlusion_and_response_correct_only%>%pull(interaction)%>%t.test())$full_result`).
+
+### Hypothesis 5 (SENSITIVITY)
+
+#### Exp. 1
+
+We find a significant drop in perceptual sensitivity ($d'$) as a function of occlusion (`r apa_print(E1.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=d[hide_proportion==0.05]-d[hide_proportion==0.15])%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 2
+
+We find a significant drop in perceptual sensitivity ($d'$) as a function of occlusion (`r apa_print(E2.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=d[hide_proportion==0.1]-d[hide_proportion>0.3])%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+We find a significant drop in perceptual sensitivity ($d'$) as a function of occlusion (`r apa_print(E3.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=d[hide_proportion==0.1]-d[hide_proportion>0.3])%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 5 (CRITERION)
+
+#### Exp. 1
+
+We find a significant increase in the signal detection criterion ($c$) as a function of occlusion (`r apa_print(E1.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=c[hide_proportion==0.05]-c[hide_proportion==0.15])%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 2
+
+We find a significant increase in the signal detection criterion ($c$) as a function of occlusion (`r apa_print(E2.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=c[hide_proportion==0.1]-c[hide_proportion>0.3])%>%pull(diff)%>%t.test())$full_result`).
+
+#### Exp. 3
+
+We find a significant increase in the signal detection criterion ($c$) as a function of occlusion (`r apa_print(E3.descriptives_by_occlusion %>% group_by(subj_id) %>% summarise(diff=c[hide_proportion==0.1]-c[hide_proportion>0.3])%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 7 (PRESENCE/ABSENCE CONFIDENCE)
+
+#### Exp. 2
+
+A paired t-test on the mean individual-level confidence ratings from correct responses only revealed a significant effect of target presence on confidence (`r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$full_result`).
+
+### Hypothesis 8 (OCCLUSION CONFIDENCE EFFECT IN PRESENCE)
+
+#### Exp. 2
+
+A paired t-test on the mean individual-level confidence ratings in correct trials only revealed a significant effect of occlusion on hit reaction times (`r apa_print(E2.confidence_by_occlusion_in_presence_correct_only$diff%>%t.test())$full_result`).
+
+### Hypothesis 9 (OCCLUSION CONFIDENCE EFFECT IN ABSENCE)
+
+#### Exp. 2
+
+A paired t-test on the mean individual-level confidence ratings in correct trials only revealed a significant effect of occlusion on correct-rejection reaction times (`r apa_print(E2.confidence_by_occlusion_in_absence_correct_only$diff%>%t.test())$full_result`).
+
+### Hypothesis 10 (OCCLUSION RESPONSE INTERACTION ON CONFIDENCE)
+
+#### Exp. 2
+
+We find no significant interaction effect between occlusion and target presence on confidence (`r apa_print(E2.confidence_by_occlusion_and_response_correct_only$interaction%>%t.test())$full_result`)
+
+## Parameter recovery
+
+```{r recovery, echo=FALSE, cache=TRUE, fig.cap="Parameter recovery results, Exp. 2 (long version)."}
 E2_recovered_parameters <- read.table('../modelling/model_fitting_matlab/best_parameters/basicModel/best_parameters_from_E2_rcv_fit.csv', header=FALSE, sep=',') %>%
   mutate(alpha=V8**2,
          belalpha=V9**2,
@@ -2500,7 +2608,103 @@ E2a_recovered_parameters <- read.table('../modelling/model_fitting_matlab/best_p
          theta1 = (V1+V2)/alpha,
          beltheta0 = V3/belalpha,
          beltheta1 = V3+V4/belalpha)
-```
-# Within-condition variability
 
-This will be Appendix B.
+E2a_long_parameter_df <- E2a_parameters %>% 
+  mutate(subj_id=1:10) %>%
+  pivot_longer(cols=alpha:beltheta1, values_to='true') %>% 
+  dplyr::select(subj_id,name,true) %>%
+  merge(
+    E2a_recovered_parameters %>% 
+      mutate(subj_id=1:10) %>%
+      pivot_longer(cols=alpha:beltheta1, values_to='recovered') %>% 
+      dplyr::select(subj_id,name,recovered)
+  ) %>%
+  filter(name != 'gamma' ) %>%
+  filter(name != 'offsetalpha') 
+
+E2_long_parameter_df <- E2_parameters %>% 
+  mutate(subj_id=1:n()) %>%
+  pivot_longer(cols=alpha:beltheta1, values_to='true') %>% 
+  dplyr::select(subj_id,name,true) %>%
+  merge(
+    E2_recovered_parameters %>% 
+      mutate(subj_id=1:n()) %>%
+      pivot_longer(cols=alpha:beltheta1, values_to='recovered') %>% 
+      dplyr::select(subj_id,name,recovered)
+  ) %>%
+  filter(name != 'gamma' ) %>%
+  filter(name != 'offsetalpha') 
+
+p <- E2a_long_parameter_df %>% 
+  filter(name != 'gamma') %>%
+  ggplot(aes(x=true,y=recovered)) +
+  geom_point() + 
+  geom_abline(slope = 1, intercept=0) + 
+  facet_wrap(~name) +
+  theme_bw()
+
+ggsave('../docs/figures/MLE_parameter_simulations/basic_model/recovery/E2a_recovery.png',p, width=4,height=3)
+
+E2a.offsetalpha <- data.frame(true=E2a_parameters$offsetalpha,
+                             recovered=E2a_recovered_parameters$offsetalpha)
+
+
+p <- E2_long_parameter_df %>% 
+  filter(name != 'gamma') %>%
+  ggplot(aes(x=true,y=recovered)) +
+  geom_point() + 
+  geom_abline(slope = 1, intercept=0) + 
+  facet_wrap(~name) +
+  theme_bw()
+
+ggsave('../docs/figures/MLE_parameter_simulations/basic_model/recovery/E2_recovery.png',p, width=4,height=3)
+
+E2.offsetalpha <- data.frame(true=E2_parameters$offsetalpha,
+                             recovered=E2_recovered_parameters$offsetalpha)
+
+
+knitr::include_graphics("../docs/figures/MLE_parameter_simulations/basic_model/recovery/E2a_recovery.png")
+
+```
+
+To verify that model-parameters are in principle identifiable, we used the participant-specific parameters fitted to participants in the long version of Exp. 1 and simulated 896 trials per participant. We then repeated the same model-fitting procedure on these recovered parameters. The correlations between fitted and recovered parameters were generally very high for the parameters of interest (see Fig. \@ref(fig:recovery)). Most importantly for our purpose, the difference between $\alpha$ and $\alpha$, indicating whether participants overestimated, underestimated, or accurately estimated the effect of occlusion on target visibility, was highly recoverable (`r  apa_print(cor.test(E2a_parameters$offsetalpha,E2a_recovered_parameters$offsetalpha))$full_result`). Furthermore, the Interecpt term linear regression model fitted to predict the recovered $\bar \alpha-\alpha$ from the true $\bar \alpha-\alpha$ was not statistically different from 0 (`r apa_print(summary(lm(recovered~true,E2a.offsetalpha)))$statistic$Intercept`), suggesting that this term was recovered not only in high precision, but also with very little bias.
+
+We repeated the same exercise, this time using parameters from the short version of Exp. 2 and stimulating 72 trials per participant. Due to the lower number of simulated trials, the correlations here were lower. Still, $\bar\alpha-\alpha$ was recoverable well above-chance, even with this very low number of trials (`r  apa_print(cor.test(E2_parameters$offsetalpha,E2_recovered_parameters$offsetalpha))$full_result`). Again, the model intercept was not significantly different from 0 (`r apa_print(summary(lm(recovered~true,E2.offsetalpha)))$statistic$Intercept`), suggesting that the relationship between $\alpha$ and $\bar \alpha$ can be recovered without introducing a bias.
+
+## Within-condition variability
+
+```{r trialVariability, echo=FALSE, cache=TRUE, fig.cap="Association between decision and and decision accuracy in human and artificial data. Solid lines represent correct responses, dahsed lines are incorrect responses. Panel A: the standard model, as presented in the main text. Panel B: the extended model, with inter-trial variability."}
+
+source("../analysis/loadAndPreprocessParametersAndSimulatedDataVariableTrials.R")
+
+
+get_accuracy_contrasts <- function(df) {
+  accuracy_contrast <- df %>%
+  filter(rt>0.1)%>%
+  group_by(subj_id) %>%
+  summarise(contrast=median(rt[correct==0])-median(rt[correct==1]),
+            yes = median(rt[correct==0 & present=='absent'])-median(rt[correct==1 & present=='present']),
+            no = median(rt[correct==0 & present=='present'])-median(rt[correct==1 & present=='absent']))
+  
+  return(accuracy_contrast)
+}
+
+E1.accuracy_contrast <- get_accuracy_contrasts(E1.minimal_df)
+E2.accuracy_contrast <- get_accuracy_contrasts(E2.minimal_df)
+E3.accuracy_contrast <- get_accuracy_contrasts(E3.minimal_df)
+
+E1.sim.accuracy_contrast <- get_accuracy_contrasts(E1.sim.df)
+E2.sim.accuracy_contrast <- get_accuracy_contrasts(E2.sim.df)
+E3.sim.accuracy_contrast <- get_accuracy_contrasts(E3.sim.df)
+
+knitr::include_graphics("figures/trialVariability.png")
+
+```
+
+In our experiments, incorrect responses were generally slower than correct responses. This was true both for "target present" responses (difference in seconds between false alarm and hit trials; Exp. 1: `r apa_print(E1.accuracy_contrast$yes%>%t.test())$estimate`, Exp. 2: `r apa_print(E2.accuracy_contrast$yes%>%t.test())$estimate`, Exp. 3: `r apa_print(E3.accuracy_contrast$yes%>%t.test())$estimate`), and for "target absent" responses (difference in seconds between miss and correct rejection trials; Exp. 1: `r apa_print(E1.accuracy_contrast$no%>%t.test())$estimate`, Exp. 2: `r apa_print(E2.accuracy_contrast$no%>%t.test())$estimate`, Exp. 3: `r apa_print(E3.accuracy_contrast$no%>%t.test())$estimate`).
+
+As presented in the main text, the model does not consistently account for these effects, sometimes even predicting that correct responses should be slower rather than faster than incorrect responses ("target present" responses in Exp. 1: `r apa_print(E1.sim.accuracy_contrast$yes%>%t.test())$estimate`, Exp. 2: `r apa_print(E2.sim.accuracy_contrast$yes%>%t.test())$estimate`, Exp. 3: `r apa_print(E3.sim.accuracy_contrast$contrast%>%t.test())$estimate`; "target absent" responses: `r apa_print(E1.sim.accuracy_contrast$no%>%t.test())$estimate`, Exp. 2: `r apa_print(E2.sim.accuracy_contrast$no%>%t.test())$estimate`, Exp. 3: `r apa_print(E3.sim.accuracy_contrast$no%>%t.test())$estimate`). 
+
+Of note, the the presented model assumes that all trials within a condition are of the same difficulty (that is, the visibility of the stimulus, and the believed visibility of the stimulus, are unchanged across trials). In the context of drift diffusion modelling, assuming that evidence accumulation varies between trials can account for slower error trials [@calder-travis2024; @ratcliff2008]. Therefore, to incorporate inter-trial variability into our model, we extended the model by assigning a random "difficulty" value $x$ to each trial, sampled uniformly from $x\in[-2,-1,0,1,2]$. Target visibility on a given trial was then defined as $\alpha\eta^x\theta$, and beliefs about visibility on a given trial are $\bar\alpha\bar\eta^{x}\bar\theta$, with both $\eta$ and $\bar\eta$ in the range of $(0,1]$. This way, lower values of $\theta$ give rise to more pronounced variability in the true visibility of stimuli (with $\theta=1$ corresponding to no variability at all), and lower values of $\bar\theta$ produce higher variability in beliefs about the visibility of stimuli. In this specification of the model, visibility and believed visibility are perfectly correlated across trials, but a third parameter can be introduced to control the alignment between the two. 
+
+We fitted the extended model to participants' behaviour in the long version of Exp. 2 and 3 (given the higher number of free parameters, using the long version ensured we had a reasonable number of data points per free parameter). As can be seen in Fig. \@ref(fig:trialVariability), the extended model successfully accounts for slower error trials both in "target present" and in "target absent" responses. Furthermore, inspection of the fitted model parameters suggests that participants underestimated the true variability in stimulus visibility across trials in Exp. 2 ($\eta-\bar\eta$: `r apa_print(t.test(E2a_parameters_vt$vt-E2a_parameters_vt$belvt))$statistic`), but not in Exp. 3, where the expected visibility of stimuli could be directly perceived in the reference stimuli (`r apa_print(t.test(E3a_parameters_vt$vt-E3a_parameters_vt$belvt))$statistic`).
