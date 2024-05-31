@@ -58,16 +58,6 @@ More generally, for a decision to be rational, it should depend not only on obse
 
 Here we ask whether people apply a similar reasoning in the domain of perception, focusing our investigations on visual detection. If such reasoning is used, decisions in the absence of a stimulus should be a function not only of what an agent sees (*perceptual evidence*) and what they expect to see (*prior*), but also of their beliefs about the probability that a stimulus would be seen, if present (the perceptual *likelihood* function). We pit this account (which we term $INCORP$, to signify the incorporation of beliefs about the perceptual likelihood function, that is, about visibility) against the alternative ($IGNORE$) that decisions about absence are made in a rule-based fashion, and relative to an internal criterion which is set based on beliefs about the probability of stimuli, the payoff structure, and recent history – but crucially not the expected likelihood of evidence (and, importantly, the absence of evidence). Such a criterion can be set in sensory units ["respond *absent* for anything below this level of brightness", @treisman1984] or temporal units ["respond *absent* if the target hasn't been detected within this much time", @chun1996], without a reference to probabilities or likelihoods.
 
-<!-- In support of this view, participants often fail to adjust their decision heuristic based on expected stimulus visibility [@gorea2000failure; @solovey2015; @gorea2000failure; @ko2012]. <!-- Finally, detection decisions may be based on an asymmetric evidence structure, providing direct evidence for presence only, with support for target absence becoming available via the the rational incorporation of beliefs about *counterfactual visibility*, or the likelihood of evidence to become available when a target is present. -->
-
-<!-- consider three accounts of perceptual detection, which entail different roles for beliefs about the likelihood function in making decisions, particularly about the absence of stimuli. First, it may be that the absence of stimuli can be directly perceived just like their presence, rendering it possible to make detection decisions not by considering the probability of perceptual evidence, or its absence, under target presence or absence, but by directly contrasting evidence for presence with evidence for absence in a purely feed-forward manner. For example, it has been suggested that sensory neurons typically have corresponding “anti-neurons” with opposite selectivity [@gold2001; @gold2002; @newsome1989], and that in the case of detection, such anti-neurons may selectively discharge in response to target absence [@gold2001]. -->
-
-<!-- A second alternative is that decisions about absence are made relative to an internal criterion which is set based on beliefs about the probability of stimuli, the payoff structure, and recent history, but not the expected likelihood of evidence. Such a criterion can be set in sensory units ["respond *present* for anything above this level of brightness", @treisman1984] or temporal units ["respond *absent* if the target hasn't been detected within this much time", @chun1996], without any reference to probabilities or likelihoods. In support of this view, participants often fail to adjust their decision heuristic based on expected stimulus visibility, both when visibility is cued [@gorea2000failure] and when it is manipulated via attention [@rahnev2011] or stimulus centrality on the retina [@solovey2015]. Finally, detection decisions may be based on an asymmetric evidence structure, providing direct evidence for presence only, with support for target absence becoming available via the the rational incorporation of beliefs about *counterfactual visibility*, or the likelihood of evidence to become available when a target is present. -->
-
-<!-- We contrast this possibility with two alternatives. First, it may be that the absence of stimuli can be directly perceived just like their presence. For example, it has been suggested that sensory neurons typically have corresponding “anti-neurons” with opposite selectivity [@gold2001; @gold2002; @newsome1989], rendering it possible to make perceptual inferences in a purely feed-forward manner, by extracting the difference in activation between neurons and their anti-neurons as perceptual evidence. @gold2001 suggest that in the case of perceptual detection, anti-neurons may selectively discharge in response to target absence, making it possible for agents to infer stimulus absence not when a stimulus would have been detected, but when stimulus absence is detected by neurons that are sensitive to the physical correlates of absent-ness. -->
-
-<!-- A second alternative is that decisions are made relative to an internal criterion which is set based on beliefs about the probability of stimuli, the payoff structure, and recent history, but not the expected likelihood of evidence ($p(E=1|H)$, or *visibility*).  Together, it is unclear whether beliefs about counterfactual visibility ever contribute to perceptual decisions outside visual search, and if they do, in what ways. -->
-
 To arbitrate between these two possibilities, we conducted three experiments where detection decisions about presence and absence were made under different levels of stimulus occlusion. Our task design allowed us to experimentally dissociate actual visibility (manipulated with occlusion and random fluctuations in the appearance of visual stimuli) from beliefs about visibility (manipulated with occlusion only), independently measuring the effects of each on perceptual decisions and confidence in presence and absence. We show that behavioural asymmetries in perceptual detection naturally emerge in an ideal observer model when only presence, but not absence, is positively represented in sensory channels. Using the same ideal-observer model, we show that detection decisions in the absence of a stimulus, their biases, timing, and confidence, are critically dependent on beliefs about the expected visibility of stimuli that are not physically present, broadly consistent with the $INCORP$ model. Finally, we provide evidence for reliable population heterogeneity in the incorporation of beliefs about visibility into perceptual decisions, independent of variability in visibility itself and yielding qualitatively opposing behavioural patterns. We discuss the implications of possessing such beliefs about visibility, as well as these qualitatively different patterns across individuals, for perception and cognition more broadly.
 
 ```{r setup, include = FALSE}
@@ -310,154 +300,12 @@ E2.confidence_by_resp_correct_only <- E2.df %>%
   mutate(diff=respTRUE-respFALSE)
 ```
 
-```{r empirical asymmetry plots, cache=TRUE, echo=FALSE}
-
-detection_colors = c('#377eb8', '#e41a1c');
-
-
-N_perm <- 1000;
-bootstrap_error <- function(x, N_perm) {
-  N <- length(x)
-  medians = c();
-  for (i in 1:N_perm) {
-    medians = c(medians,sample(x,replace=TRUE,size=N)%>%median())
-  };
-  return(sd(medians))
-}
-
-E1.pRT_collapsed <- E1.df %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, subj_id) %>%
-  summarise(RT=median(RT)) %>%
-  group_by(present) %>%
-  summarise(sem=bootstrap_error(RT,N_perm),
-            RT=median(RT))%>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(1200,2500))+
-  geom_errorbar(aes(ymin=RT-sem,ymax=RT+sem),width=0.2)+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='reaction time (ms)',x='') 
-
-ggsave('../docs/figures/E1_RT_asymmetry.png',E1.pRT_collapsed, width=2,height=2)
-
-E2.pRT_collapsed <- E2.df %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, subj_id) %>%
-  summarise(RT=median(RT)) %>%
-  group_by(present) %>%
-  summarise(sem=bootstrap_error(RT,N_perm),
-            RT=median(RT))%>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(1200,2500))+
-  geom_errorbar(aes(ymin=RT-sem,ymax=RT+sem),width=0.2)+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='reaction time (ms)',x='') 
-
-ggsave('../docs/figures/E2_RT_asymmetry.png',E2.pRT_collapsed, width=2,height=2)
-
-E2.pconfidence_collapsed <- E2.df %>% 
-  filter(correct==1 & !is.na(confidence)) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, subj_id) %>%
-  summarise(confidence=mean(confidence)) %>%
-  group_by(present) %>%
-  summarise(se=se(confidence),
-            confidence=mean(confidence))%>%
-  ggplot(aes(x=present,y=confidence,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(0.8,0.9))+
-  geom_errorbar(aes(ymin=confidence-se,ymax=confidence+se),width=0.2)+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='confidence ratings',x='') 
-
-ggsave('../docs/figures/E2_confidence_asymmetry.png',E2.pconfidence_collapsed, width=2,height=2)
-
-E3.pRT_collapsed <- E3.df %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, subj_id) %>%
-  summarise(RT=median(RT)) %>%
-  group_by(present) %>%
-  summarise(sem=bootstrap_error(RT,N_perm),
-            RT=median(RT))%>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(1200,2500))+
-  geom_errorbar(aes(ymin=RT-sem,ymax=RT+sem),width=0.2)+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='reaction time (ms)',x='') 
-
-ggsave('../docs/figures/E3_RT_asymmetry.png',E3.pRT_collapsed, width=2,height=2)
-```
 
 Before using decisions about absence as a critical test case for the role of beliefs about likelihood in perceptual decisions, we need to establish that these decisions are made based on the absence of evidence for presence, and not based on direct evidence for absence. Crucially, if the absence of stimuli is perceived just like their presence, decisions about absence can be affected by occlusion simply because occlusion affects the visibility of evidence for absence [@gold2001], not because participants believe that it would affect the visibility of evidence for presence. Pronounced behavioural asymmetries between decisions about presence and absence provide initial, tentative evidence against a "direct perception of absence" account. First, correct decisions about absence were markedly slower than decisions about presence, by hundreds of milliseconds (Fig. \@ref(fig:asymmetries)A). This was true in Exp. 1 (pre-registered Hypothesis 1: `r printnum(E1.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E1.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E1.RT_by_resp%>%pull(diff)%>%t.test())$statistic`), Exp. 2 (`r printnum(E2.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E2.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E2.RT_by_resp%>%pull(diff)%>%t.test())$statistic`), and Exp. 3 (pre-registered hypothesis 1: `r printnum(E3.RT_by_resp%>%pull(respTRUE)%>%mean()/1000)` vs `r printnum(E3.RT_by_resp%>%pull(respFALSE)%>%mean()/1000)` seconds; `r apa_print(E3.RT_by_resp%>%pull(diff)%>%t.test())$statistic`). Second, in Exp. 2, confidence ratings were significantly lower in decisions about absence (pre-registered hypothesis 7: `r E2.confidence_by_resp_correct_only$respTRUE%>%mean()%>%printnum()` vs `r E2.confidence_by_resp_correct_only$respFALSE%>%mean()%>%printnum()` on a $0.5-1$ scale; `r apa_print(E2.confidence_by_resp_correct_only%>%pull(diff)%>%t.test())$statistic`; Fig. \@ref(fig:asymmetries)D). While one could conceive of direct perception for absence, but poorer perception of it, these data at minimum suggest that evidence accumulation for presence and absence is not a symmetric process.
 
 Furthermore, and perhaps more convincingly, exploratory reverse correlation analysis revealed that reaction time and confidence ratings were driven by different factors in decisions about presence versus absence. Since luminance values were randomly sampled per pixel and frame, the perceived similarity between the presented stimulus and the target letter fluctuated both within and between trials. This allowed us to directly measure how stimulus-target similarity (quantified as the Pearson correlation between unoccluded pixels and their corresponding pixels in the target letter, statistically controlling for the proportion of pure-noise and hidden pixels in the frame) contributed to reaction times in decisions about presence and absence. Following previous reverse correlation studies of decision confidence [@zylberberg2012; @mazor2023paradoxical], we focused our analysis on the first 300 ms of the stimulus presentation, and extracted, per trial, the mean similarity between the display and the target letter in these first frames. We then computed the Spearman correlation between these trial-wise similarity measures and the reaction times, focusing our analysis on correct responses only (see Fig. \@ref(fig:asymmetries)C). Our reasoning was as follows: if perceptual evidence for both presence and absence equally contributes to perceptual detection decisions, effects of stimulus-target similarity on target-present reaction time and confidence should be mirrored by perfectly opposite effects of stimulus-target similarity in target-absent trials. If, however, only perceptual evidence for presence is represented, the negative effects of stimulus-target dissimilarity on target-absent decisions should be attenuated relative to the corresponding effects of stimulus-target similarity on target-present decisions.
 
-```{r rc-confidence, message=F, warning=F, echo=F, include=F}
-
-detection_colors = c('#377eb8', '#e41a1c');
-
-E2.frames_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all_data.csv') %>%
-  mutate(subj_id=PROLIFIC_PID,
-         correct = as.numeric(correct),
-         RT = as.numeric(RT),
-         present=as.numeric(present),
-         resp = response==presence_key)  %>%
-  filter(test_part %in% c('test1','test2'))%>%
-  mutate(p=ifelse(present==0,0,max_p))%>%
-  group_by(p, hide_proportion)%>%
-  mutate(correlation_with_target_letter_corrected = 
-           correlation_with_target_letter-mean(correlation_with_target_letter, na.rm=T),
-         occlusion=factor(ifelse(hide_proportion<0.2,'low','high')))
-
-E2.rc_confidence <- E2.frames_df %>%
-  filter(frame_index>7 & frame_index<13 & correct & !is.na(confidence))%>%
-  group_by(subj_id,trial_index,present,occlusion)%>%
-  summarise(evidence=mean(correlation_with_target_letter_corrected),
-            confidence=mean(confidence))%>%
-  group_by(subj_id,present,occlusion) %>%
-  summarise(confidence=cor(evidence,confidence,method='spearman')) %>%
-  group_by(subj_id,present)%>%
-  summarise(confidence=mean(confidence))%>%
-  spread(present,confidence,sep='') %>%
-  mutate(diff=present1+present0)
-
-E2.frames_df %>%
-  filter(frame_index>7 & frame_index<40 & correct & !is.na(confidence))%>%
-  group_by(subj_id,present,occlusion,frame_index) %>%
-  summarise(confidence=cor(correlation_with_target_letter_corrected,confidence,method='spearman')) %>%
-  group_by(subj_id,present,frame_index)%>%
-  summarise(confidence=mean(confidence))%>%
-  group_by(present,frame_index)%>%
-  summarise(se=se(confidence),
-            confidence=mean(confidence, na.rm=T))%>%
-  ggplot(aes(x=frame_index,y=confidence,color=factor(present),fill=factor(present)))+
-  geom_abline(slope=0,intercept=0)+
-  geom_line()+
-  geom_ribbon(aes(ymin=confidence-se,ymax=confidence+se),alpha=0.3)+
-      scale_color_manual(values=detection_colors)+
-    scale_fill_manual(values=detection_colors)
-  
-```
-
-```{r rc-RT, message=F, warning=F, echo=F, include=F}
+```{r rc, message=F, warning=F, echo=F, include=F}
 
 E1.frames_df <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfiles_batch1/all_data.csv') %>%
   mutate(subj_id=PROLIFIC_PID,
@@ -472,6 +320,19 @@ E1.frames_df <- read_csv('../experiments/Exp1pixels/version2/data/jatos_resultfi
   mutate(correlation_with_target_letter_corrected = 
            correlation_with_target_letter-mean(correlation_with_target_letter, na.rm=T),
          occlusion=factor(ifelse(hide_proportion<0.10,'low','high')))
+
+E2.frames_df <- read_csv('../experiments/Exp2rows/data/jatos_resultfiles_batch1/all_data.csv') %>%
+  mutate(subj_id=PROLIFIC_PID,
+         correct = as.numeric(correct),
+         RT = as.numeric(RT),
+         present=as.numeric(present),
+         resp = response==presence_key)  %>%
+  filter(test_part %in% c('test1','test2'))%>%
+  mutate(p=ifelse(present==0,0,max_p))%>%
+  group_by(p, hide_proportion)%>%
+  mutate(correlation_with_target_letter_corrected = 
+           correlation_with_target_letter-mean(correlation_with_target_letter, na.rm=T),
+         occlusion=factor(ifelse(hide_proportion<0.2,'low','high')))
 
 E3.frames_df <- read_csv('../experiments/Exp3reference/data/jatos_results_files_batch1/all_data.csv') %>%
   mutate(subj_id=PROLIFIC_PID,
@@ -655,14 +516,27 @@ E2a.rc_RT_neg <- E2a.frames_df %>%
   summarise(RT=mean(RT))%>%
   spread(present,RT,sep='') %>%
   mutate(diff=present1+present0)
+
+E2.rc_confidence <- E2.frames_df %>%
+  filter(frame_index>7 & frame_index<13 & correct & !is.na(confidence))%>%
+  group_by(subj_id,trial_index,present,occlusion)%>%
+  summarise(evidence=mean(correlation_with_target_letter_corrected),
+            confidence=mean(confidence))%>%
+  group_by(subj_id,present,occlusion) %>%
+  summarise(confidence=cor(evidence,confidence,method='spearman')) %>%
+  group_by(subj_id,present)%>%
+  summarise(confidence=mean(confidence))%>%
+  spread(present,confidence,sep='') %>%
+  mutate(diff=present1+present0)
+
  
 ```
 
-<!-- We next asked whether random variation in the similarity of the stimulus to the target letter affected decision times, separately for decisions about presence and absence.  -->
 
 (ref:asymmetries) Presence-absence asymmetries. A) median reaction times in correct responses as a function of target presence. Error bars represent the standard error of the median, computed with bootstrapping. B) mean correlations between RT and stimulus-target similarity. Error margins are 1 standard error from the mean. C) Analysis approach, illustrated for a single frame number. For each frame, the correlation between the demeaned noise and the target served as an index of stimulus-target similarity. We then extracted, for each frame number and participant, the correlation between these similarity measures and their corresponding trial-wise reaction times, or confidence ratings. This was done separately for correct target-present and target-absent decisions. Statistical tests were performed on the mean over the first 300 ms of the stimulus, represented by a black bar in panel B. D) mean confidence times in correct responses as a function of target presence. Error bars represent the standard error of the mean. B) mean correlations between confidence and stimulus-target similarity. \*\*\*: p\<0.001
 
 ```{r asymmetries, echo=FALSE, fig.cap="(ref:asymmetries)", out.width = '100%'}
+source("../analysis/makeFig2.R")
 knitr::include_graphics("figures/asymmetries.png")
 ```
 
@@ -674,156 +548,15 @@ Confidence ratings in Exp. 2 further allowed us to test the relationship between
 
 ## An ideal observer model of visual detection
 
-<!-- We present two variants of a Partially Observed Markov Decision Process [POMDP, @littman2009] model of perceptual detection: a symmetric variant, equipped with a presence-sensor and an absence-sensor (Fig. @ref(fig:model), left panels) and an asymmetric variant, equipped only with a presence-sensor (Fig. @ref(fig:model)A, right panels). Our motivation is not only to describe the processes by which humans make perceptual decisions, but to identify the evidence structure under which rational behaviour produces the error, reaction time and confidence rating patterns observed in humans [@anderson1990]. We provide a high-level description of the model here and a more detailed description in the Methods section. As we show, presence-absence asymmetries in decision time and decision confidence are borne out of rational evidence accumulation when the information value of evidence for presence and absence is itself asymmetrical. -->
-
 Presence-absence asymmetries in reaction time and confidence are expected if evidence is only ever available to support presence, leaving absence to be inferred tentatively and based on the absence of evidence. To formulate this asymmetry in the availability of evidence, we present a Partially Observed Markov Decision Process [POMDP, @littman2009] model of perceptual detection. Critically, our model has an asymmetric structure: it is equipped only with a presence-sensor, but not with an absence-sensor (Fig. \@ref(fig:model)A, right panels). We ask whether, when faced with this evidence structure, a rational agent would behave in ways that resemble the behaviour of our participants [@anderson1990]. We provide a high-level description of the model here and a more detailed description in the Methods section. As we show, presence-absence asymmetries in decision time and decision confidence are borne out of rational evidence accumulation when the information value of evidence for presence and absence is itself asymmetrical.
 
-```{r basic simulations, echo=FALSE, cache=TRUE}
 
-sim.sym <- read_csv('../modelling/model_fitting_Matlab/simulate_data_from_parameters/simulated_data/illustration/sym.csv')  %>%
-  rename(RT=rt) %>%
-  mutate(decision = ifelse(present==1,correct,1-correct))
-
-sim.asym <- read_csv('../modelling/model_fitting_Matlab/simulate_data_from_parameters/simulated_data/illustration/asym.csv') %>%
-  rename(RT=rt) %>%
-  mutate(decision = ifelse(present==1,correct,1-correct))
-
-  sim.RC <- read_csv('../modelling/model_fitting_Matlab/simulate_data_from_parameters/simulated_data/illustration/RC_highthreshold_ByT.csv') %>%
-  rename(RT=rt) %>%
-  rowwise() %>%
-  mutate(RT=RT+rnorm(1,0,2),
-         confidence=confidence+rnorm(1,0,0.01),
-         decision = ifelse(present==1,correct,1-correct));
-
-
-detection_colors = c('#377eb8', '#e41a1c');
-labels = c('Present','Absent')
-
-pRT_collapsed <- sim.asym %>%
-  filter(correct==1)%>%
-  mutate(present=factor(present,levels=c(1,-1),labels=c('present','absent')))%>%
-  group_by(present)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(10,22))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='number of time points',title='Reaction time',x='') 
-
-ggsave('../docs/figures/model/RT_collapsed_square.png',pRT_collapsed, width=2,height=2)
-
-pBias_collapsed <- sim.asym %>% 
-  mutate(bias=mean(decision))%>%
-  # group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(y=bias)) +
-  # scale_fill_manual(values=detection_colors) +
-  # scale_shape_manual(values=c(21,22))+
-  # scale_y_continuous(limits=c(0.475,0.525))+
-  scale_x_continuous(limits=c(0.45,0.55),breaks=c(0.5),labels=c('all trials'))+
-  geom_point(size=3, shape=21,x=0.5,fill='black') +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='propotion "present"',title='Bias',x='') 
-
-ggsave('../docs/figures/model/Bias_collapsed_square.png',pBias_collapsed, width=1,height=2)
-
-
-pconfidence_collapsed <- sim.asym %>% 
-  filter(correct==1 ) %>%
-  mutate(present=factor(present,levels=c(1,-1),labels=c('present','absent')))%>%
-  group_by(present)%>%
-  summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=present,y=confidence,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(0.85,0.95))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='Bayesian p(correct)',title='Confidence',x='') 
-
-ggsave('../docs/figures/model/confidence_collapsed_square.png',pconfidence_collapsed, width=2,height=2)
-
-RT_RC <- sim.RC %>%
-  filter(correct==1 & frame<8 & RT>12)%>%
-  mutate(present=factor(present,levels=c(1,-1),labels=c('present','absent')))%>%
-  group_by(present,frame)%>%summarise(RT=cor(RT,evidence)) %>%
-  ggplot(aes(x=frame,y=RT,color=present,fill=present)) +
-  scale_color_manual(values=detection_colors) +
-  scale_y_continuous(limits=c(10,22))+
-  geom_point(size=3) +
-  geom_line(size=1)+
-  theme_classic() +
-  theme(legend.pos='na') +
-  geom_abline(slope=0,intercept=0)+
-  labs(y='correlation',x='') 
-
-ggsave('../docs/figures/model/RTRC_collapsed_square.png',RT_RC, width=2,height=1.8)
-
-confidence_RC <- sim.RC %>%
-  filter(correct==1 & frame<8 & RT>7)%>%
-  mutate(present=factor(present,levels=c(1,-1),labels=c('present','absent')))%>%
-  group_by(present,frame)%>%summarise(confidence=cor(confidence,evidence)) %>%
-  ggplot(aes(x=frame,y=confidence,color=present,fill=present)) +
-  scale_color_manual(values=detection_colors) +
-  # scale_y_continuous(limits=c(10,22))+
-  geom_point(size=3) +
-  geom_line(size=1)+
-  theme_classic() +
-  theme(legend.pos='na') +
-  geom_abline(slope=0,intercept=0)+
-  labs(y='correlation',x='') 
-
-ggsave('../docs/figures/model/confRC_collapsed_square.png',confidence_RC, width=2,height=1.8)
-
-
-conf_discrete_counts <- sim.asym %>%
-  mutate(confidence = round(confidence*100)/100)%>%
-  group_by(decision, correct, confidence, .drop=FALSE) %>%
-  tally() %>%
-  spread(correct, n, sep='',fill=0) %>%
-  arrange(desc(confidence), by_group=TRUE) %>%
-  group_by(decision)%>%
-  mutate(cs_correct=cumsum(correct1)/sum(correct1),
-         cs_incorrect=cumsum(correct0)/sum(correct0))
-
-additional_lines = conf_discrete_counts %>%
-  group_by(decision) %>%
-  reframe(confidence=c(0,1),cs_incorrect = c(0,1),cs_correct=c(0,1))
-
-conf_discrete_counts = rbind(conf_discrete_counts,additional_lines)
-
-labels=c('present','absent')
-
-p<- ggplot(data=conf_discrete_counts%>%mutate(response=ifelse(decision==1,labels[1],labels[2])%>%factor(levels=labels)),
-       aes(x=cs_incorrect, y=cs_correct, color=response)) +
-  geom_line(size=1.3) +
-  # geom_point(aes(shape = response))+
-  geom_abline(slope=1)+
-  theme_bw() + coord_fixed() +
-  labs(x='p(conf | incorrect)', y='p(conf | correct)')+ 
-  scale_color_manual(values=detection_colors)+
-  scale_fill_manual(values=detection_colors) +
-  scale_x_continuous(breaks=c())+
-  scale_y_continuous(breaks=c())+
-  geom_rect(aes(xmin=0,xmax=1,ymin=0,ymax=1),size=0.5,color='black',alpha=0)+
-  theme_classic()+
-  theme(legend.position='none')+
-  labs(title='mc sensitivity')
-
-ggsave('../docs/figures/model/AUC_square.png',p,width=2,height=2)
-
-```
-
-<!-- In visual detection tasks, decisions about absence are commonly slower, and are given with lower levels of subjective confidence, relative to decisions about presence [@mazor2021stage; @mazor2023paradoxical; @mazor2020distinct]. Presence-absence asymmetries in reaction time and confidence are expected if evidence is only ever available to support presence, leaving absence to be inferred tentatively and based on the absence of evidence. To formulate this asymmetry in the availability of evidence, we present two variants of a Partially Observed Markov Decision Process [POMDP, @littman2009] model of perceptual detection: a symmetric variant, equipped with a presence-sensor and an absence-sensor (Fig. @ref(fig:model), left panels) and an asymmetric variant, equipped only with an absence-sensor. Crucially, instead of fitting model parameters to observed behaviour, our motivation is to ask about the conditions under which a given policy would be rational from the point of view of the participant [@anderson1990]. We provide a high-level description of the model here and a more detailed description in the Methods section. As we show, asymmetries in decision time and decision confidence are borne out of rational evidence accumulation when the value of positive and negative evidence is itself asymmetrical. -->
 
 ```{r model, echo=FALSE, fig.cap="An ideal observer model of visual detection. A) model architecture. Target presence affects the activation probability of a presence sensor. The agent perceives a series of binary outcomes (sensor activations), based on which it attempts to guess the true world state (target presence or absence). This is done by extracting and accumulating the log likelihood ratio (LLR) for target presence versus absence and deciding whether to make a decision based on available evidence, or alternatively whether to accumulate more evidence. In making this decision, the agent balances the incentive to be as accurate as possible (only correct decisions are associated with an intrinsic reward) and the exponential discounting of the value of reward as a function of time. B) The first samples from an example trial, and their interpretation by the agent. Sensor activations are much more informative than sensor inactivations, as indicated by the shallow negative and steep positive slopes of the LLR sequence. C) behavioural predictions for an ideal observer. The model predicts that decisions about absence should be slower, and that they should be accompanied by lower levels of subjective confidence, than decisions about presence. ", out.width = '100%'}
+source('../analysis/makeFig3.R')
 knitr::include_graphics("figures/compModelAsym.png")
 ```
 
-<!-- We model sensory observations as the binary (on/off) activations of visual sensors which are probabilistically tuned to one state of the world. For example, the "presence sensor" in the symmetric model (@ref(fig:model)A, left panel) has a higher activation probability when a target is present ($0.15$) than absent ($0.05$). The agent is intrinsically rewarded for making accurate decisions regarding the state of the world (stimulus presence or absence), given these observations. To increase the probability of being correct, the agent can choose to wait and accumulate more observations before making a decision. However, the intrinsic value of accuracy is subject to temporal discounting, rendering the value of later correct decisions lower than that of earlier ones. Thus, from the agent’s perspective, accumulating further evidence pays off exactly when the expected accuracy gain exceeds the discounting loss. -->
 
 We model sensory observations as the binary (on/off) activations of a "presence sensor" which is probabilistically tuned to one state of the world. For example, in our illustration (\@ref(fig:model)A) the presence sensor has a higher activation probability when a target is present ($0.20$) than absent ($0.05$). The agent is intrinsically rewarded for making accurate decisions regarding the state of the world (stimulus presence or absence), given these observations. To increase the probability of being correct, the agent can choose to wait and accumulate more observations before making a decision. However, the intrinsic value of accuracy is subject to temporal discounting, rendering the value of later correct decisions lower than that of earlier ones. Thus, from the agent’s perspective, accumulating further evidence pays off exactly when the expected accuracy gain exceeds the discounting loss.
 
@@ -844,356 +577,12 @@ $V_{INCORP}$, on the other hand, incorporates into its perceptual decisions full
 (ref:modelocclusion) Modelling the effects of occlusion on visual detection. A) We model the effect of occlusion as scaling of the probability of sensor activation. B) The first sensory samples from example trials and their corresponding interpretations as a function of the believed visibility level. C) reaction time and confidence effects in simulated rational observers as a function of target presence and absence and level of occlusion, correct trials only. Variant $V_{INCORP}$ considers the effect of occlusion when interpreting sensory evidence and making decisions, whereas variant $V_{IGNORE}$ does not.
 
 ```{r model-occlusion, echo=FALSE, fig.cap="(ref:modelocclusion)", out.width = '100%'}
+source('../analysis/makeFig4.R')
 knitr::include_graphics("figures/compModelOcclusionGraphAsym.png")
 ```
 
 The two model variants predict different effects of occlusion on accuracy, decision times and confidence ratings. This is especially evident in target-absent trials (red lines in Fig. \@ref(fig:model-occlusion)C). While occluding more of the display makes $V_{INCORP}$ commit more false-alarms, it makes $V_{IGNORE}$ make fewer of them. $V_{INCORP}$‘s decisions about absence are slower when more of the display is occluded, whereas $V_{IGNORE}$’s decisions about absence are faster. Finally, $V_{INCORP}$ is less confident in decisions about absence when more of the display is occluded, but this is not true of $V_{IGNORE}$. Together, both the size and direction of occlusion effects on decisions about absence are dependent on meta-perceptual knowledge about the influence of occlusion on visibility, or the incorporation of such knowledge into perceptual decisions.
 
-```{r load_and_plot_occlusion_simulation, echo=FALSE, cache=TRUE}
-
-sim.occlusion <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
-
-sim.occlusion_f1 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_fault1.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
-
-sim.occlusion_sym <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_antineuron.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
-
-sim.occlusion_sym_f1 <- read_csv('../modelling/simulated_data/accum_bernoulli_occlusion_antineuron_fault1.csv') %>%
-  mutate(correct = ifelse(decision==present,1,0))
-
-pRT_collapsed <- sim.occlusion %>% 
-  filter(correct==1 & occluded_rows==2) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(10,22))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='number of time points',title='Reaction time',x='') 
-
-ggsave('../docs/figures/model/RT_collapsed_square.png',pRT_collapsed, width=2,height=2)
-
-
-pconfidence_collapsed <- sim.occlusion %>% 
-  filter(correct==1 & occluded_rows==2) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=present,y=confidence,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(0.85,0.95))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='Bayesian p(correct)',title='Confidence',x='') 
-
-ggsave('../docs/figures/model/confidence_collapsed_square.png',pconfidence_collapsed, width=2,height=2)
-
-
-detection_colors = c('#377eb8', '#e41a1c');
-labels = c('Present','Absent')
-
-conf_discrete_counts <- sim.occlusion %>%
-  mutate(confidence = round(confidence*100)/100)%>%
-  group_by(decision, correct, confidence, .drop=FALSE) %>%
-  tally() %>%
-  spread(correct, n, sep='',fill=0) %>%
-  arrange(desc(confidence), by_group=TRUE) %>%
-  group_by(decision)%>%
-  mutate(cs_correct=cumsum(correct1)/sum(correct1),
-         cs_incorrect=cumsum(correct0)/sum(correct0))
-
-additional_lines = conf_discrete_counts %>%
-  group_by(decision) %>%
-  reframe(confidence=c(0,1),cs_incorrect = c(0,1),cs_correct=c(0,1))
-
-conf_discrete_counts = rbind(conf_discrete_counts,additional_lines)
-
-labels=c('present','absent')
-
-p<- ggplot(data=conf_discrete_counts%>%mutate(response=ifelse(decision==1,labels[1],labels[2])%>%factor(levels=labels)),
-       aes(x=cs_incorrect, y=cs_correct, color=response)) +
-  geom_line(size=1.3) +
-  # geom_point(aes(shape = response))+
-  geom_abline(slope=1)+
-  theme_bw() + coord_fixed() +
-  labs(x='p(conf | incorrect)', y='p(conf | correct)')+ 
-  scale_color_manual(values=detection_colors)+
-  scale_fill_manual(values=detection_colors) +
-  scale_x_continuous(breaks=c())+
-  scale_y_continuous(breaks=c())+
-  geom_rect(aes(xmin=0,xmax=1,ymin=0,ymax=1),size=0.5,color='black',alpha=0)+
-  theme_classic()+
-  theme(legend.position='none')+
-  labs(title='mc sensitivity')
-
-ggsave('../docs/figures/model/AUC_square.png',p,width=2,height=2)
-
-#-------
-
-pRT_collapsed <- sim.occlusion_sym %>% 
-  filter(correct==1 & occluded_rows==2) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=present,y=RT,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(10,22))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='number of time points',title='Reaction time',x='') 
-
-ggsave('../docs/figures/model/RT_collapsed_square_sym.png',pRT_collapsed, width=2,height=2)
-
-
-pconfidence_collapsed <- sim.occlusion_sym %>% 
-  filter(correct==1 & occluded_rows==2) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent')))%>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=present,y=confidence,fill=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(21,22))+
-  scale_y_continuous(limits=c(0.85,0.95))+
-  geom_point(size=3, shape=21) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  labs(y='Bayesian p(correct)',title='Confidence',x='') 
-
-ggsave('../docs/figures/model/confidence_collapsed_square_sym.png',pconfidence_collapsed, width=2,height=2)
-
-
-  
-detection_colors = c('#377eb8', '#e41a1c');
-labels = c('Present','Absent')
-
-conf_discrete_counts <- sim.occlusion_sym %>%
-  mutate(confidence = round(confidence*100)/100)%>%
-  group_by(decision, correct, confidence, .drop=FALSE) %>%
-  tally() %>%
-  spread(correct, n, sep='',fill=0) %>%
-  arrange(desc(confidence), by_group=TRUE) %>%
-  group_by(decision)%>%
-  mutate(cs_correct=cumsum(correct1)/sum(correct1),
-         cs_incorrect=cumsum(correct0)/sum(correct0))
-
-additional_lines = conf_discrete_counts %>%
-  group_by(decision) %>%
-  reframe(confidence=c(0,1),cs_incorrect = c(0,1),cs_correct=c(0,1))
-
-conf_discrete_counts = rbind(conf_discrete_counts,additional_lines)
-
-labels=c('present','absent')
-
-p<- ggplot(data=conf_discrete_counts%>%mutate(response=ifelse(decision==1,labels[1],labels[2])%>%factor(levels=labels)),
-       aes(x=cs_incorrect, y=cs_correct, color=response)) +
-  geom_line(size=1.3) +
-  # geom_point(aes(shape = response))+
-  geom_abline(slope=1)+
-  theme_bw() + coord_fixed() +
-  labs(x='p(conf | incorrect)', y='p(conf | correct)')+ 
-  scale_color_manual(values=detection_colors)+
-  scale_fill_manual(values=detection_colors) +
-  scale_x_continuous(breaks=c())+
-  scale_y_continuous(breaks=c())+
-  geom_rect(aes(xmin=0,xmax=1,ymin=0,ymax=1),size=0.5,color='black',alpha=0)+
-  theme_classic()+
-  theme(legend.position='none')+
-  labs(title='mc sensitivity')
-
-ggsave('../docs/figures/model/AUC_square_sym.png',p,width=2,height=2)
-
-```
-
-```{r plot simulated occlusion effects, echo=FALSE, cache=TRUE}
-
-RT_A<- sim.occlusion %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
-  scale_shape_manual(values=c(4,16))+
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_y_continuous(limits=c(10,25))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='time points',x='') 
-
-ggsave('../docs/figures/model/RT_A.png',RT_A, width=1.6,height=1.6)
-
-RT_B<- sim.occlusion_f1 %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(10,25))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='time points',x='') 
-
-ggsave('../docs/figures/model/RT_B.png',RT_B, width=1.6,height=1.6)
-
-RT_sym_A<- sim.occlusion_sym %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(10,25))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='time points',x='') 
-
-ggsave('../docs/figures/model/RT_Asym.png',RT_sym_A, width=1.6,height=1.6)
-
-RT_sym_B<- sim.occlusion_sym_f1 %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(RT=mean(RT)) %>%
-  ggplot(aes(x=occluded_rows,y=RT,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(10,25))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='time points',x='') 
-
-ggsave('../docs/figures/model/RT_Bsym.png',RT_sym_B, width=1.6,height=1.6)
-
-
-conf_A<- sim.occlusion %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='Bayes p(correct)',x='') 
-
-ggsave('../docs/figures/model/conf_A.png',conf_A, width=1.6,height=1.6)
-
-conf_B<- sim.occlusion_f1 %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_color_manual(values=detection_colors) +
-  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='Bayes p(correct)',x='') 
-
-ggsave('../docs/figures/model/conf_B.png',conf_B, width=1.6,height=1.6)
-
-conf_sym_A<- sim.occlusion_sym %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='Bayes p(correct)',x='') 
-
-ggsave('../docs/figures/model/conf_Asym.png',conf_sym_A, width=1.6,height=1.6)
-
-conf_Bsym<- sim.occlusion_sym_f1 %>% 
-  filter(correct==1) %>%
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(confidence=mean(confidence)) %>%
-  ggplot(aes(x=occluded_rows,y=confidence,fill=present, color=present,shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(0.8,1), breaks=seq(0.8,1,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='Bayes p(correct)',x='') 
-
-ggsave('../docs/figures/model/conf_Bsym.png',conf_Bsym, width=1.6,height=1.6)
-
-acc_A<- sim.occlusion %>% 
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(errors=1-mean(correct)) %>%
-  ggplot(aes(x=occluded_rows,y=errors,fill=present, color=present, shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(0,0.3), breaks=seq(0,0.35,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='error rate',x='') 
-
-ggsave('../docs/figures/model/acc_A.png',acc_A, width=1.6,height=1.6)
-
-acc_B<- sim.occlusion_f1 %>% 
-  mutate(present=factor(present,levels=c(1,0),labels=c('present','absent'))) %>%
-  group_by(present, occluded_rows)%>%summarise(errors=1-mean(correct)) %>%
-  ggplot(aes(x=occluded_rows,y=errors,fill=present, color=present, shape=present)) +
-  scale_fill_manual(values=detection_colors) +
-  scale_color_manual(values=detection_colors) +
-  scale_shape_manual(values=c(4,16))+
-  scale_y_continuous(limits=c(0,0.3), breaks=seq(0,0.35,0.05))+
-  geom_line()+
-  geom_point(size=2) +
-  theme_classic() +
-  theme(legend.pos='na') +
-  scale_x_continuous(limits=c(0,8),breaks=c(2,6),labels=c('easy','hard'))+
-  labs(y='error rate',x='') 
-
-ggsave('../docs/figures/model/acc_B.png',acc_B, width=1.6,height=1.6)
-
-
-
-```
 
 ## Findings: occlusion effects
 
@@ -1746,9 +1135,7 @@ As a more sensitive test of effect reliability, we employed the non-parametric *
 
 (ref:sc-results) Sign consistency analysis. A) An illustration of the sign-consistency test, for a hypothetical participant. Sign consistency is the proportion of random splits, out of 500, for which both trial subsets show the same qualitative effect. Individual sign-consistency scores are then averaged and compared against a non-parametric null-distribution to obtain a p-value. B) Occlusion effect distributions in Exp. 2 and 3. In order to obtain sufficient statistical power, we collected hundreds of trials from a random subset of 10 participants (marked with vertical lines). C) Sign consistency results. Within each panel, we present median RT as a function of occlusion level for each participant on the left. Color saturation indicates sign-consistency. On the right, we present individual sign-consistency scores as circles, alongside the group-average sign consistency score (horizontal line), overlaid on top of the non-parametric null distribution. In both experiments, group-level sign-consistency was significantly above chance for the effect of occlusion on response-time in target-absent trials. \*: p\<0.05, \*\*: p\<0.01, \*\*\*: p\<0.001
 
-```{r sc-results, echo=FALSE, fig.cap="(ref:sc-results)"}
-knitr::include_graphics("figures/occlusionSC.png")
-```
+
 
 ```{r sc, message=F, warning=F, echo=F, include=F}
 
@@ -1827,6 +1214,11 @@ knitr::include_graphics("figures/occlusionSC.png")
 #             "E3a.ta.sign_consistency"), file="../analysis/sc.Rdata")
 
 load('../analysis/sc.Rdata')
+```
+
+```{r sc-results, echo=FALSE, fig.cap="(ref:sc-results)"}
+source('../analysis/makeFig6.R')
+knitr::include_graphics("figures/occlusionSC.png")
 ```
 
 ```{r t-tests, echo=FALSE, cache=TRUE}
@@ -2209,7 +1601,6 @@ The model successfully captured some, but not all, population variability in the
 
 Inspecting the fitted model parameters revealed that overall, $\alpha$ and $\bar\alpha$ were correlated across individuals (Exp. 1: `r apa_print(cor.test(E1_parameters$alpha,E1_parameters$belalpha))$estimate`; Exp. 2: `r apa_print(cor.test(E2_parameters$alpha,E2_parameters$belalpha))$estimate`; Exp. 3: `r apa_print(cor.test(E3_parameters$alpha,E3_parameters$belalpha))$estimate`), meaning participants' beliefs about the effects of occlusion on visibility were proportional to the true effect of occlusion on stimulus visibility. Importantly, despite this strong alignment, participants had an overall tendency to act in accordance with a belief that occlusion affected visibility to a lesser degree than its true effect (Exp. 1: `r apa_print(t.test(E1_parameters$belalpha-E1_parameters$alpha))$statistic`; Exp. 2: `r apa_print(t.test(E2_parameters$belalpha-E2_parameters$alpha))$statistic`; Exp. 3: `r apa_print(t.test(E3_parameters$belalpha-E3_parameters$alpha))$statistic`). While occlusion had a similar effect on $\alpha$ in Exp. 2 and 3 (`r apa_print(t.test(E2_parameters$alpha,E3_parameters$alpha))$statistic`), the added reference stimuli in Exp. 3 affected $\bar\alpha$, bringing it closer to $\alpha$ itself (a contrast between $|\alpha-\bar\alpha|$ in Exp. 2 and 3: `r apa_print(t.test(abs(E2_parameters$alpha-E2_parameters$belalpha),abs(E3_parameters$alpha-E3_parameters$belalpha)))$statistic`). This is in line with the theoretical interpretation of these two model parameters as being based in the true and believed effects of occlusion on visibility, respectively.
 
-<!-- To quantify the model's success in capturing population variability in the effect of occlusion on error rates and response times, we extracted the correlation between the true effects of occlusion and the effects as measured in artificial data, simulated using the parameters of the same participants. True and simulated effects were correlated (more so for error rate effects than for reaction time effects). Specifically, for each of the four measures (miss rate, false alarm rate, reaction time in correct target-present responses, and reaction time in correct target-absent responses), the model could account for both positive and negative effects of occlusion as emerging from a rational policy (see Fig. X). -->
 
 ```{r regression model}
 
@@ -2510,10 +1901,6 @@ ft
 
 ```
 
-<!-- (ref:scatters) Correlations between observed and simulated effects of occlusion on decisions in the absence of the target, for the full model (black solid lines), and two model variants: one that is constrained to accurately incorporate beliefs about the effects of occlusion on visibility (green dashed lines) and one that is constrained to ignore such beliefs (purple dotted lines). A) Occlusion effects on the false alarm rate. B) Occlusion effects on response times in correct rejections. \*\*: p\<0.01, \*\*\*: p\<0.001 -->
-
-<!-- To test the idea that variability in the effects of occlusion on perceptual decisions reflects more than variability in the physical effects of occlusion on visibility, we fitted two reduced models, using the same model-fitting procedure. The first reduced model forced the constraint that $\alpha=\bar\alpha$, effectively forcing a $V_{INCORP}$-like behaviour. The second reduced model forced the constraint that $\bar\alpha=1$, rendering participants unaware of the effects of occlusion on visibility, similar to $V_{IGNORE}$. We then measured how well the two models captured population variability in the effects of occlusion by taking the Pearson correlation between observed and simulated effects, across participants. A much smaller proportion of variability in target-absent response times could be accounted for by $V_{IGNORE}$ than by the full model (`r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.rt_correlations%>%filter(present==0)%>%pull(human),E1.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p=0.002$; Exp. 2: :`r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.rt_correlations%>%filter(present==0)%>%pull(human),E2.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; Exp. 3: :`r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.rt_correlations%>%filter(present==0)%>%pull(human),E3.rt_correlations%>%filter(present==0)%>%pull(ni)))$estimate`, $p<0.001$; correlations were compared using Steiger's test for dependent correlations, @steiger1980 ). Similarly, a much smaller proportion of variability in the effect of occlusion on false alarms could be explained by $V_{INCORP}$ than by the full model (Exp. 1:`r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E1.error_correlations%>%filter(present==0)%>%pull(human),E1.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 2: `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E2.error_correlations%>%filter(present==0)%>%pull(human),E2.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$; Exp. 3: `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(sim)))$estimate` versus `r apa_print(cor.test(E3.error_correlations%>%filter(present==0)%>%pull(human),E3.error_correlations%>%filter(present==0)%>%pull(fi)))$estimate`, $p<0.001$). Together, the effect of occlusion on participants' error rates and response times could not be fully captured by a single perceptual parameter. Independently modeling participants' beliefs about the effects of occlusion on target visibility significantly improved the model's ability to account for individual differences. -->
-
 # Discussion
 
 Much focus has been placed on the role of prior expectations in perceptual inference [@summerfield2009; @kok2013; @yon2021action; @press2020; @powers2017; @weilnhammer2018; @yon2023], with important discussions regarding the (im)penetrability of visual perception to such effects from cognition [@pylyshyn1999; @firestone2016] and potential implications for models of delusions and schizophrenia [@powers2017; @corlett2019; @stuke2019; @haarsma2023] . Here we focus on the other component of Bayesian reasoning, often neglected in such discussions: beliefs about the likelihood function going from world states to sensory input. Unlike prior expectations about the world (e.g., the probability that someone would be knocking on my door), beliefs about the likelihood function describe the perceptual system itself (e.g., the probability that I would be able to hear the knock if someone was knocking on my door). Previous work postulated a role for such meta-perceptual beliefs in metacognitive confidence judgments [@rausch2018; @olawole-scott2023; @hellmann2023], but not in perceptual decisions proper. Focusing on a visual detection task, and specifically on trials in which no target was present, we show that beliefs about the perceptual likelihood function affect decision times and decision criteria of the detection judgments themselves. In short, beliefs about visibility influence perceptual decisions.
@@ -2525,26 +1912,6 @@ Importantly, our model cannot decide between these two equally valid interpretat
 Our findings fit with inferential, "inverse optics" accounts of perception, according to which vision is the inversion of an internal generative model of how world states translate to perceptual states, in light of noisy sensory data [@alhazen2001; @helmholtz1866; @friston2010; @gershman2012]. Given our participants' overall successful incorporation of beliefs about occlusion into perceptual decisions, previous reports of a failure to adjust a detection criterion as a function of expected visibility are more likely to reflect limited meta-perceptual knowledge [for example, of the lower vision acuity in the visual periphery, @solovey2015], or a limited ability to use recently acquired knowledge in a flexible manner [@gorea2000failure], rather than a blanket inability to incorporate beliefs about the perceptual likelihood function into perceptual decisions.
 
 Our new model raises some questions for the ways in which perceptual detection decisions are typically modelled and conceptualized. Drift diffusion models, for example, often conceive of presence and absence evidence accumulation as a symmetric process, where the two decision bounds can be simply labelled ‘present’ and ‘absent’ in an identical fashion to labelling of two stimulus categories – e.g., ‘S’ and ‘A’ [@ratcliff2008; @ratcliff2016; @gold2001]. Moreover, the parameters of such models— the drift rate, starting point bias and the boundary separation—describe the screws and bolts of the decision-making process, not the agent's beliefs and preferences. Our ideal observer model provides esdescription, in terms of the subject's beliefs and goals, allowing for a separation between what the agent sees and what the agent believe they should see under different states of the world. Our findings suggest that these beliefs must be incorporated into our models of perceptual decisions, and that they affect not only participants' decision threshold, but also the interpretation of incoming evidence, in line with a previous finding of decision-procsses influencing the drift rate in a non-perceptual (recognition memory) decision making task [@starns2012]. We provide a model and accompanying code which makes explicit the separation between perceptual input and its interpretation, with the hope that it can prove useful in modelling of perceptual tasks more broadly.
-
-<!-- Moreover, our framework allows to infer what people know and believe about the perceptual likelihood function from their perceptual decisions in the absence of a stimulus, formalising the argument that beliefs about perception play a key role in decisions about absence [@kanai2010; @mazor2021inference]. -->
-
-<!-- Occlusion affects not only the visibility of objects, but also the counterfactual visibility of absent objects: how visible they would have been had they been present. Here, to pinpoint the roles of counterfactual visibility in perceptual decision making, we asked whether occlusion had similar effects on perceiving stimuli and their absence. Below we summarise the three main contributions of this paper, potential limitations, and open questions for future research. -->
-
-<!-- ## Contributions -->
-
-<!-- First, we provide an ideal observer model of perceptual detection. This model traces presence-absence asymmetries in reaction time and confidence to asymmetries in the information value of positive and negative evidence in a detection setting. The model also formalises the argument that metacognitive beliefs about perception play a key role in decisions about absence [@kanai2010; @mazor2021inference]. We show that the same manipulation can have opposite effects on decisions in the absence of a target, depending on the agent's metacognitive beliefs about the manipulation, or their tendency to incorporate these beliefs into their perceptual decision making process. -->
-
-<!-- Second, we find empirical support for the incorporation of counterfactual visibility into perceptual decisions in the absence of a target, as well as subjective confidence in such decisions. Using reverse correlation, we show that timing and confidence have strikingly different origins in decisions about presence and absence: available perceptual evidence mostly affects decisions about presence, and beliefs about the availability of counterfactual evidence mostly affect decisions about absence. Our results shed new lights on previous findings of subjects' limited ability to adjust their decision criteria based on expected visibility. Given our participants' successful incorporation of beliefs about occlusion into perceptual decisions, previous reports are likely to reflect limited meta-perceptual knowledge [for example, of vision acuity as a function of retinal position, @solovey2015], or a limited ability to use recently acquired knowledge in a flexible manner [@gorea2000failure]. -->
-
-<!-- Finally, the effect of occlusion on "target absent" decision times was reliably variable across individuals. Computational modelling suggests that this variability is related, at least in part, to individual differences in the incorporation of beliefs about counterfactual visibility into perceptual decisions, further underscoring the complexity of the cognitive processes involved in deceptively simple perceptual decisions. -->
-
-<!-- Importantly, our model cannot decide between two equally valid interpretations of this variability: as emerging from differences in people's tendency to incorporate counterfactuals into their decision making, or as reflecting variability in meta-perceptual knowledge about the effects of occlusion on perception. Indeed, knowing that occlusion affects stimulus visibility is a precondition for rationally incorporating this knowledge into the decision-making process. While this may seem like an unlikely account, an increase in the effect of occlusion on the false alarm rate between Exp. 2 and 3 indicates that having direct access to the effects of occlusion on stimulus visibility does facilitate the use of counterfactuals in perception. Importantly, however, the fact that target-absent decision times in Exp. 3 were subject to the same population variability, with some participants making reliably faster decisions about absence when more of the display was occluded, suggest that incomplete meta-perceptual knowledge cannot be the full explanation. Some participants failed to use beliefs about counterfactual visibility even when it was directly presented to them. -->
-
-<!-- Individual differences in incorporating counterfactuals into perceptual decisions may have far-reaching implications for people's ability to make valid inferences from perceptual inputs, tell true absences from low-visibility, and distinguish between true perceptual input and expected or imagined input.  -->
-
-<!-- ## Limitations and future directions -->
-
-<!-- It is impportant to note that some aspects of the data were not captured by our model, including the group-level effect of occlusion on the false alarm rate in Exp. 2 and 3 and the relatively slower error trials (in the Appendix we show that allowing visibility and beliefs about visibility to vary between trials can account for the relationship between accuracy and reaction time). Furthermore, while our model captured the fact that "target-absent" responses are overall slower, it underestimated this effect (see Fig. \@ref(fig:main-results)B), suggesting that other processes, perhaps outside perception [@zang2022; @beltran2021], contribute to the difference in response times between target-present and target-absent responses. However, this seems a valid assumption. -->
 
 We see this work as establishing that many—but possibly not all—individuals use beliefs about expected or counterfactual visibility to inform their perceptual decisions, and that traces of these beliefs can be identified in the way detection decisions are made, especially in the absence of a target. For our purpose here, we used the most obvious visibility manipulation that we could think of: partial stimulus occlusion. A promising direction for future research would be to use target-absent trials to infer what people know and believe about their own perception. For example, it may turn out that some manipulations affect visibility without affecting expected visibility, or vice versa: affecting expected visibility with no real effect on visibility. This way, inferences in the absence of a target can provide a window into implicit metacognitive knowledge about perception [@mazor2021inference].
 
